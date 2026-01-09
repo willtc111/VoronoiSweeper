@@ -1,9 +1,16 @@
 export type Point2D = [number, number];
 
-export function distance(a: Point2D, b: Point2D) {
+export function distance(a: Point2D, b: Point2D): number {
   let dx = b[0] - a[0];
   let dy = b[1] - a[1];
   return Math.sqrt(dx*dx + dy*dy);
+}
+
+export function average(a: Point2D, b: Point2D): Point2D {
+  return [
+    (a[0] + b[0]) / 2,
+    (a[1] + b[1]) / 2
+  ];
 }
 
 export function angle_between(a: Point2D, b: Point2D): number {
@@ -28,7 +35,16 @@ export function circumcircleCenter(points: [Point2D, Point2D, Point2D]): Point2D
   );
   if (det == 0.0) {
     console.error(`Points ${points[0]}, ${points[1]}, ${points[2]} are collinear`);
-    throw new Error("Points are collinear");
+    // throw new Error("Points are collinear");
+    // Return the average of the points as a fallback
+    let avgPt = [
+      (x1 + x2 + x3) / 3,
+      (y1 + y2 + y3) / 3
+    ] as Point2D;
+    console.log(points);
+    console.log("Average at");
+    console.log(avgPt);
+    return avgPt;
   }
 
   let center_x = (

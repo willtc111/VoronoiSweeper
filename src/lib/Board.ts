@@ -1,4 +1,4 @@
-import { angle_between, circumcircleCenter, distance, type Point2D } from "./Geometry";
+import { angle_between, average, circumcircleCenter, distance, type Point2D } from "./Geometry";
 import { shuffle, type RNG } from "./Random";
 
 type Point = {
@@ -21,6 +21,9 @@ export type SweeperCell = VoronoiCell & {
 export type Board = {
   width: number;
   height: number;
+  flagCount: number;
+  mineCount: number;
+  safeCount: number;
   cells: SweeperCell[];
 };
 
@@ -69,9 +72,10 @@ export function createBoard(
 
 
   // Create list of unique grid positions to avoid overlapping cells
+  let maxOffset = 0;
   let gridPositions: [number,number][] = [...Array(height)].flatMap(
     (_, y) => [...Array(width)].map(
-      (_, x) => [x + (random() * 0.01), y + (random() * 0.001)] as [number, number]
+      (_, x) => [x + (random() * maxOffset), y + (random() * maxOffset)] as [number, number]
     )
   );
   gridPositions = shuffle(gridPositions, random);
@@ -81,6 +85,7 @@ export function createBoard(
   for (let i = 0; i < cellCount; i++) {
     points.push(gridPositions.pop()!);
   }
+  console.log(points);
 
   // Perform Delaunay triangulation to calculate neighbors
 
@@ -90,11 +95,17 @@ export function createBoard(
   //   [width,height],
   //   [0,height]
   // ];
+  // let bounds: Point2D[] = [
+  //   [-5,-5],
+  //   [width+5,-5],
+  //   [width+5,height+5],
+  //   [-5,height+5]
+  // ];
   let bounds: Point2D[] = [
-    [-5,-5],
-    [width+5,-5],
-    [width+5,height+5],
-    [-5,height+5]
+    [-1,-1],
+    [width+1,-1],
+    [width+1,height+1],
+    [-1,height+1]
   ];
   let allPoints: Point2D[] = [...points, ...bounds];
   let tris: Triangle[] = [
@@ -135,6 +146,39 @@ export function createBoard(
     }
   }
 
+  // We want triangles that share an edge and have the same
+  // length as that edge between their opposite points to have
+  // a new edge between their opposite points also added
+
+  // Edges have unique center points in a delaunay triangulation
+  // Build a mapping from edge center point to triangle
+  // Each will contain at most 2 triangles (only border tris have 1)
+
+  // Basically we want to find all the places where the delaunay
+  // triangulation could be flipped between two options
+
+  // Map from Point2D (as a string)
+  // to point indices that an edge could be flipped to (2 points means flip)
+
+  const flipMap = new Map<string, number[]>();
+  tris.forEach(t => {
+    let pts: Point2D[] = t.indices.map(i => allPoints[i]);
+    for (let ia = 0; ia < 3; ia++) {
+      const ib = (ia + 1) % 3; // index of other edge point
+      const ic = (ia + 2) % 3; // index of opposite point
+      const edgeMidpoint: Point2D = average(pts[ia], pts[ib]);
+      const edgeLength = distance(pts[ia], pts[ib]);
+      const oppositePt: Point2D = pts[ic];
+      const triHeight = distance(edgeMidpoint, oppositePt);
+      if (triHeight == edgeLength / 2) {
+        const edgeMidpointStr = `${edgeMidpoint}`;
+        const flipPoints: number[] = flipMap.get(edgeMidpointStr) ?? [];
+        flipPoints.push(t.indices[ic]);
+        flipMap.set(edgeMidpointStr, flipPoints);
+      }
+    }
+  });
+
   // Convert triangles to edges
   let edges = tris.flatMap(t => {
     return [
@@ -143,11 +187,31 @@ export function createBoard(
       [t.indices[2], t.indices[0]],
     ]
   });
+
   // Build adjacency matrix
   let adjmat: boolean[][] = Array.from({length: allPoints.length}, () => Array.from({length: allPoints.length}));
   for (let [iA, iB] of edges) {
     adjmat[iA][iB] = true;
     adjmat[iB][iA] = true;
+  }
+
+  let fullAdjmat: boolean[][] = adjmat.map(row => [...row]); // deep copy
+  for (let pts of flipMap.values()) {
+    if (pts.length == 2) {
+      // Add the flipped edge!
+      edges.push([pts[0], pts[1]]);
+    }
+  }
+  // Get all the edges for viable (2 point) edge flips
+  edges = Array.from(
+    flipMap.values()
+  ).filter(e =>
+    e.length == 2
+  ).map(pts => [pts[0], pts[1]]);
+  // Add the adjacency matrix connections
+  for (let [iA, iB] of edges) {
+    fullAdjmat[iA][iB] = true;
+    fullAdjmat[iB][iA] = true;
   }
 
   // Construct voronoi cells
@@ -179,6 +243,14 @@ export function createBoard(
       regionPoints.push(center);
     }
     regionPoints.push(regionPoints[0]); // close the loop
+
+    // Get neighboring cells that share edges *or vertices*
+    neighborIndices = [];
+    for (let [iNeighbor, isNeighbor] of fullAdjmat[iPoint].entries()) {
+      if (isNeighbor && iNeighbor < allPoints.length - 4) {
+          neighborIndices.push(iNeighbor);
+      }
+    }
     let cell: SweeperCell = {
       index: iPoint,
       position: allPoints[iPoint],
@@ -204,6 +276,9 @@ export function createBoard(
   return {
     width: width,
     height: height,
-    cells: cells
+    cells: cells,
+    flagCount: 0,
+    mineCount: mineCount,
+    safeCount: 0,
   };
 }

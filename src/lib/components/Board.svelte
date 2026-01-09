@@ -2,12 +2,12 @@
   import {Deck, Layer, OrthographicView} from '@deck.gl/core';
   import {PathLayer, PolygonLayer, ScatterplotLayer, TextLayer} from '@deck.gl/layers';
   import { mulberry32, seedToHash, type RNG } from "$lib/Random";
-	import { onMount } from 'svelte';
-	import { createBoard, type Board, type SweeperCell, type VoronoiCell } from '$lib/Board';
+  import { onMount } from 'svelte';
+  import { createBoard, type Board, type SweeperCell, type VoronoiCell } from '$lib/Board';
 
-  export let boardWidth: number = 40;
-  export let boardHeight: number = 30;
-  let cellSize = 25;
+  export let boardWidth: number = 15;
+  export let boardHeight: number = 10;
+  let cellSize = 50;
   $: canvasWidth = cellSize * boardWidth;
   $: canvasHeight = cellSize * boardHeight;
 
@@ -24,7 +24,8 @@
   let hoverCellIndex: number | undefined = undefined;
   let neighborCellIndices: number[] = [];
 
-  const numberColors = [
+  type Color = [number, number, number, number];
+  const numberColors: Color[] = [
     [0, 0, 255, 255],
     [0, 128, 0, 255],
     [255, 0, 0, 255],
@@ -34,6 +35,18 @@
     [0, 0, 0, 255],
     [128, 128, 0, 255],
   ];
+  const borderColor: Color = [125, 125, 125, 255];
+  const explodedMineColor: Color = [255, 0, 0, 255];
+  const flaggedColor: Color = [255, 120, 120, 255];
+  const revealedColor: Color = [220, 220, 220, 255];
+  const hoverColor: Color = [150, 150, 150, 255];
+  const hoverFlaggedColor: Color = [225, 80, 80, 255];
+  const neighborFlaggedColor: Color = [220, 150, 80, 255];
+  const neighborHoverColor: Color = [185, 185, 165, 255];
+  const hiddenColor: Color = [200, 200, 200, 255];
+
+  let gameOver: boolean = false;
+  let isWin: boolean = true;
 
   function createDeck() {
     if (deck) {
@@ -44,7 +57,7 @@
       canvas: canvas,
       width: canvasWidth,
       height: canvasHeight,
-      controller: true, // For debug only, set to false later
+      controller: false,
       initialViewState: {
         target: [
           (boardWidth / 2) - 0.5,
@@ -66,34 +79,10 @@
 
     let layers: Layer[] = [];
 
-    // layers.push(new ScatterplotLayer({
-    //   data: board.cells,
-    //   getPosition: c => c.position,
-    //   getFillColor: c => [
-    //     c.position[0]/boardWidth * 255,
-    //     0,
-    //     c.position[1]/boardHeight * 255,
-    //     255
-    //   ],
-    //   getRadius: 2,
-    //   radiusUnits: 'pixels',
-    //   pickable: true,
-    //   onHover: (info, event) => {
-    //     console.log('Look:', info?.object?.position);
-    //   }
-    // }));
     layers.push(new PolygonLayer<SweeperCell>({
       data: board.cells,
       getPolygon: (c: SweeperCell) => c.border,
-      getFillColor: (c: SweeperCell) => {
-        if (hoverCellIndex == c.index) {
-          return [150, 150, 150, 255];
-        } else if (neighborCellIndices.includes(c.index)) {
-          return [185, 185, 165, 255];
-        } else {
-          return [200, 200, 200, 255]
-        }
-      },
+      getFillColor: (c: SweeperCell) => getCellColor(c),
       getLineWidth: 0,
       lineWidthUnits: 'pixels',
       pickable: true,
@@ -107,19 +96,29 @@
         }
         updateLayers();
       },
+      onClick: (info, event) => {
+        if (info.object) {
+          // Flag with right click, reveal with left click
+          console.log(event);
+          if (event?.rightButton) {
+            flagCell(info.object.index);
+          } else {
+            clickCell(info.object.index);
+          }
+        }
+      },
       updateTriggers: {
-        getFillColor: [hoverCellIndex, neighborCellIndices]
+        getFillColor: [hoverCellIndex, neighborCellIndices, board.cells.map(c => c.isRevealed), board.cells.map(c => c.isFlagged) ]
       }
     }));
     layers.push(new PathLayer<SweeperCell>({
       data: board.cells,
       getPath: (c: SweeperCell) => c.border,
-      getColor: [125, 125, 125, 255],
+      getColor: (c: SweeperCell) => borderColor,
       getWidth: 3,
       widthUnits: 'pixels',
       jointRounded: true,
     }));
-    
 
     if (drawConnections) {
       // Draw connections between neighbors
@@ -128,25 +127,33 @@
       for (let cell of board.cells) {
         for (let iNeighbor of cell.neighbors) {
           let neighbor = board.cells[iNeighbor];
-          connectionLines.push({positions: [cell.position, neighbor.position]});
+          connectionLines.push({positions: [
+            [
+              cell.position[0] + 0.075,
+              cell.position[1] + 0.025
+            ],
+            [
+              neighbor.position[0] - 0.05,
+              neighbor.position[1] - 0.05
+            ]]});
         }
       }
       layers.push(new PathLayer<LineData>({
         data: connectionLines,
         getPath: (d: LineData) => d.positions,
-        getColor: [0, 0, 0, 50],
+        getColor: [255, 0, 0, 50],
         getWidth: 1,
         widthUnits: 'pixels',
       }));
     }
 
     layers.push(new TextLayer<SweeperCell>({
-      data: board.cells.filter(c => c.neighborMines > 0 && !c.isMine),
+      data: board.cells.filter(c => c.isRevealed && (c.isMine || c.neighborMines > 0)),
       getPosition: (c: SweeperCell) => c.position,
-      getText: (c: SweeperCell) => `${c.neighborMines}`,
+      getText: (c: SweeperCell) => `${c.isMine ? "M" : c.neighborMines}`,
       getSize: (c: SweeperCell) => hoverCellIndex == c.index ? 24 : 18,
       sizeUnits: 'pixels',
-      getColor: (c: SweeperCell) => numberColors[c.neighborMines - 1],
+      getColor: (c: SweeperCell) => c.isMine ? [0, 0, 0, 255] : numberColors[c.neighborMines - 1],
       updateTriggers: {
         getSize: [hoverCellIndex, neighborCellIndices]
       }
@@ -165,7 +172,7 @@
       layers.push(new PathLayer<LineData>({
         data: [border],
         getPath: (d: LineData) => d.positions,
-        getColor: [0, 255, 0, 255],
+        getColor: [0, 0, 0, 255],
         getWidth: 3,
         widthUnits: 'pixels',
       }));
@@ -176,15 +183,114 @@
     });
   }
 
+  function getCellColor(c: SweeperCell): [number, number, number, number] {
+    if (c.isRevealed && c.isMine && !c.isFlagged) {
+      return explodedMineColor; // Exploded, unflagged mine
+    } else if (c.isRevealed) {
+      return revealedColor; // Revealed cell
+    } else if (hoverCellIndex == c.index) {
+      return c.isFlagged ? hoverFlaggedColor : hoverColor;
+    } else if (neighborCellIndices.includes(c.index)) {
+      return c.isFlagged ? neighborFlaggedColor : neighborHoverColor;
+    } else {
+      return c.isFlagged ? flaggedColor : hiddenColor;
+    }
+  }
+
+  function flagCell(index: number) {
+    let cell = board.cells[index];
+    if (cell.isRevealed) {
+      return;
+    }
+    cell.isFlagged = !cell.isFlagged;
+    board.flagCount += cell.isFlagged ? 1 : -1;
+    updateLayers();
+  }
+
+  function clickCell(index: number, isExpand:boolean = false) {
+    if (gameOver) {
+      return;
+    }
+    let cell = board.cells[index];
+    if (cell.isFlagged || cell.isRevealed) {
+      return;
+    }
+    cell.isRevealed = true;
+    if (cell.isMine) {
+      // Game over
+      for (let c of board.cells) {
+        if (c.isMine) {
+          c.isRevealed = true;
+        }
+      }
+      gameOver = true;
+      isWin = false;
+      clearInterval(timerInterval);
+      return;
+    }
+    // Automatically expand revealed area for 0s
+    if (cell.neighborMines == 0 && !cell.isMine) {
+      for (let iNeighbor of cell.neighbors) {
+        let neighbor = board.cells[iNeighbor];
+        if (!neighbor.isFlagged && !neighbor.isRevealed && !neighbor.isMine) {
+          clickCell(neighbor.index, true);
+        }
+      }
+    }
+    board.safeCount += 1;
+
+    if (board.safeCount == board.cells.length - board.mineCount) {
+      // Player has won
+      gameOver = true;
+      isWin = true;
+      for (let c of board.cells) {
+        if (c.isMine) {
+          c.isFlagged = true;
+        }
+      }
+      clearInterval(timerInterval);
+    }
+
+    // Only update the layers after the full possible expansion
+    if (!isExpand) {
+      updateLayers();
+    }
+  }
+
+  const startTime = Date.now();
+  let timer: number = 0;
+  let timerInterval: NodeJS.Timeout | undefined;
+
   onMount(() => {
-    board = createBoard(boardWidth, boardHeight, 81, 10, random);
+    board = createBoard(boardWidth, boardHeight, 81, 10, random); // Good example board
+    // board = createBoard(boardWidth, boardHeight, boardWidth * boardHeight - 5, 1, random); // Full with one cell missing
+    // board = createBoard(boardWidth, boardHeight, boardWidth * boardHeight, 1, random); // Full minefield
+
     createDeck();
     updateLayers();
+    timerInterval = setInterval(() => {
+      timer = Date.now() - startTime;
+    }, 1000/4);
   });
+
+  function millisecondsToTimeString(ms: number): string {
+    let totalSeconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
 </script>
 
-<!-- Canvas -->
 <div class="flex flex-col gap-2">
+  <!-- Header -->
+  <div class="flex justify-between">
+    <span>{board?.mineCount - board?.flagCount}</span>
+    <span>:)</span>
+    <span>{millisecondsToTimeString(timer)}</span>
+  </div>
+
+  <!-- Canvas -->
   <div
     role="region"
     class="box-content border-2 border-gray-700"
@@ -196,26 +302,33 @@
     }}
   >
     <canvas
-      class="bg-gray-100 w-full h-full block"
+      class="w-full h-full block"
+      style="color: rgba({borderColor[0]}, {borderColor[1]}, {borderColor[2]}, {borderColor[3]/255});"
       bind:this={canvas}
+      on:contextmenu|preventDefault
     ></canvas>
   </div>
 
   <!-- Controls -->
-  <div>
-    <label>
-      <input type="checkbox" bind:checked={drawBoardBorder} on:change={updateLayers} />
-      Draw Board Border
-    </label>
-    
-    <label>
-      <input type="checkbox" bind:checked={drawConnections} on:change={updateLayers} />
-      Draw Connections
-    </label>
+  <div class="flex justify-between">
+    <div>
+      <label>
+        <input type="checkbox" bind:checked={drawBoardBorder} on:change={updateLayers} />
+        Draw Board Border
+      </label>
+      <label>
+        <input type="checkbox" bind:checked={drawConnections} on:change={updateLayers} />
+        Draw Connections
+      </label>
+    </div>
 
-    {#if hoverCellIndex != undefined}
-      <span class="px-2">Cell {hoverCellIndex}</span>
+    {#if gameOver}
+      <span>You {isWin ? "Win!" : "Lose!"}</span>
     {/if}
+
+    <!-- {#if hoverCellIndex != undefined}
+      <span class="px-2">Cell {hoverCellIndex}</span>
+    {/if} -->
   </div>
 
   <!-- Debug Info -->

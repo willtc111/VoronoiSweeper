@@ -16,6 +16,15 @@ export function mulberry32(seed: number): RNG {
 }
 
 /**
+ * Create a random seed string
+ * @param rng RNG function
+ * @returns Seed string
+ */
+export function generateSeed(rng: RNG = mulberry32(Date.now())): string {
+  return rng().toString(36).substring(2, 10);
+}
+
+/**
  * FNV-1a hash function to convert a string to a seed number
  * @param str Seed string
  * @returns Seed number
@@ -32,6 +41,7 @@ export function seedToHash(str: string): number {
 /**
  * Fisher-Yates shuffle an array
  * @param inputArray Unshuffled array
+ * @param rng RNG function
  * @returns Shuffled array
  */
 export function shuffle<T>(inputArray: T[], rng: RNG): T[] {
