@@ -70,7 +70,6 @@ export function createBoard(
     throw new Error("Number of mines must be at least 1");
   }
 
-
   // Create list of unique grid positions to avoid overlapping cells
   let maxOffset = 0;
   let gridPositions: [number,number][] = [...Array(height)].flatMap(
@@ -88,24 +87,11 @@ export function createBoard(
   console.log(points);
 
   // Perform Delaunay triangulation to calculate neighbors
-
-  // let bounds: Point2D[] = [
-  //   [0,0],
-  //   [width,0],
-  //   [width,height],
-  //   [0,height]
-  // ];
-  // let bounds: Point2D[] = [
-  //   [-5,-5],
-  //   [width+5,-5],
-  //   [width+5,height+5],
-  //   [-5,height+5]
-  // ];
   let bounds: Point2D[] = [
     [-1,-1],
-    [width+1,-1],
-    [width+1,height+1],
-    [-1,height+1]
+    [width,-1],
+    [width,height],
+    [-1,height]
   ];
   let allPoints: Point2D[] = [...points, ...bounds];
   let tris: Triangle[] = [
@@ -146,20 +132,11 @@ export function createBoard(
     }
   }
 
-  // We want triangles that share an edge and have the same
-  // length as that edge between their opposite points to have
-  // a new edge between their opposite points also added
+  // Find all the places where the delaunay triangulation could
+  // be flipped between two equally valid edge arrangements
 
-  // Edges have unique center points in a delaunay triangulation
-  // Build a mapping from edge center point to triangle
-  // Each will contain at most 2 triangles (only border tris have 1)
-
-  // Basically we want to find all the places where the delaunay
-  // triangulation could be flipped between two options
-
-  // Map from Point2D (as a string)
-  // to point indices that an edge could be flipped to (2 points means flip)
-
+  // Map from unique edge center points (Point2D string)
+  // to point indices (2 points means a viable flip)
   const flipMap = new Map<string, number[]>();
   tris.forEach(t => {
     let pts: Point2D[] = t.indices.map(i => allPoints[i]);
@@ -188,13 +165,14 @@ export function createBoard(
     ]
   });
 
-  // Build adjacency matrix
+  // Build adjacency matrix for voronoi polygon calculations
   let adjmat: boolean[][] = Array.from({length: allPoints.length}, () => Array.from({length: allPoints.length}));
   for (let [iA, iB] of edges) {
     adjmat[iA][iB] = true;
     adjmat[iB][iA] = true;
   }
 
+  // Create adjacency matrix for neighbor calculation
   let fullAdjmat: boolean[][] = adjmat.map(row => [...row]); // deep copy
   for (let pts of flipMap.values()) {
     if (pts.length == 2) {
@@ -208,7 +186,7 @@ export function createBoard(
   ).filter(e =>
     e.length == 2
   ).map(pts => [pts[0], pts[1]]);
-  // Add the adjacency matrix connections
+  // Add the additional adjacency matrix connections
   for (let [iA, iB] of edges) {
     fullAdjmat[iA][iB] = true;
     fullAdjmat[iB][iA] = true;
@@ -244,13 +222,14 @@ export function createBoard(
     }
     regionPoints.push(regionPoints[0]); // close the loop
 
-    // Get neighboring cells that share edges *or vertices*
+    // Get neighbor cells for connectivity
     neighborIndices = [];
     for (let [iNeighbor, isNeighbor] of fullAdjmat[iPoint].entries()) {
       if (isNeighbor && iNeighbor < allPoints.length - 4) {
           neighborIndices.push(iNeighbor);
       }
     }
+
     let cell: SweeperCell = {
       index: iPoint,
       position: allPoints[iPoint],

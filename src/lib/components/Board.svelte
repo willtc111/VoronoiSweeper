@@ -1,23 +1,22 @@
 <script lang="ts">
   import {Deck, Layer, OrthographicView} from '@deck.gl/core';
-  import {PathLayer, PolygonLayer, ScatterplotLayer, TextLayer} from '@deck.gl/layers';
+  import {PathLayer, PolygonLayer, TextLayer} from '@deck.gl/layers';
   import { mulberry32, seedToHash, type RNG } from "$lib/Random";
   import { onMount } from 'svelte';
   import { createBoard, type Board, type SweeperCell, type VoronoiCell } from '$lib/Board';
 
   export let boardWidth: number = 15;
-  export let boardHeight: number = 10;
-  let cellSize = 50;
+  export let boardHeight: number = 15;
+  let cellSize = 40;
   $: canvasWidth = cellSize * boardWidth;
   $: canvasHeight = cellSize * boardHeight;
 
   export let seed: string;
-  let random: RNG = mulberry32(seedToHash(seed));
 
   let canvas: HTMLCanvasElement;
   let deck: Deck<OrthographicView>;
 
-  let drawBoardBorder: boolean = true;
+  let drawBoardBorder: boolean = false;
   let drawConnections: boolean = false;
 
   let board: Board;
@@ -44,6 +43,7 @@
   const neighborFlaggedColor: Color = [220, 150, 80, 255];
   const neighborHoverColor: Color = [185, 185, 165, 255];
   const hiddenColor: Color = [200, 200, 200, 255];
+  const connectionColor: Color = [255,255,255,100];
 
   let gameOver: boolean = false;
   let isWin: boolean = true;
@@ -57,7 +57,7 @@
       canvas: canvas,
       width: canvasWidth,
       height: canvasHeight,
-      controller: false,
+      controller: true,
       initialViewState: {
         target: [
           (boardWidth / 2) - 0.5,
@@ -141,7 +141,7 @@
       layers.push(new PathLayer<LineData>({
         data: connectionLines,
         getPath: (d: LineData) => d.positions,
-        getColor: [255, 0, 0, 50],
+        getColor: connectionColor,
         getWidth: 1,
         widthUnits: 'pixels',
       }));
@@ -160,7 +160,6 @@
     }));
 
     if (drawBoardBorder) {
-      // Border from (0,0) to (boardWidth, boardHeight)
       type LineData = {positions: [number, number][]};
       let border = {positions: [
         [-0.5, -0.50],
@@ -185,9 +184,9 @@
 
   function getCellColor(c: SweeperCell): [number, number, number, number] {
     if (c.isRevealed && c.isMine && !c.isFlagged) {
-      return explodedMineColor; // Exploded, unflagged mine
+      return explodedMineColor;
     } else if (c.isRevealed) {
-      return revealedColor; // Revealed cell
+      return revealedColor;
     } else if (hoverCellIndex == c.index) {
       return c.isFlagged ? hoverFlaggedColor : hoverColor;
     } else if (neighborCellIndices.includes(c.index)) {
@@ -198,6 +197,9 @@
   }
 
   function flagCell(index: number) {
+    if (gameOver) {
+      return;
+    }
     let cell = board.cells[index];
     if (cell.isRevealed) {
       return;
@@ -257,14 +259,22 @@
     }
   }
 
+  // Game clock
   const startTime = Date.now();
   let timer: number = 0;
   let timerInterval: NodeJS.Timeout | undefined;
 
+  // Cell and mine count modifiers
+  let density: number;
+  let danger: number;
+
   onMount(() => {
-    board = createBoard(boardWidth, boardHeight, 81, 10, random); // Good example board
-    // board = createBoard(boardWidth, boardHeight, boardWidth * boardHeight - 5, 1, random); // Full with one cell missing
-    // board = createBoard(boardWidth, boardHeight, boardWidth * boardHeight, 1, random); // Full minefield
+    let random: RNG = mulberry32(seedToHash(seed));
+    density = 0.3 + (0.7 * random()); // Percentage of grid points to make into cells (1 = normal minesweeper)
+    danger = 0.15 + (0.1 * random()); // Percentage of cells to make into mines
+    let cellCount = Math.ceil(boardWidth * boardHeight * density);
+    let mineCount = Math.ceil(cellCount * danger);
+    board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
 
     createDeck();
     updateLayers();
@@ -280,6 +290,11 @@
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  function getCssRgbString(color: Color) {
+    return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+  }
+
+  $: canvasEdgeColor = getCssRgbString(gameOver ? (isWin ? [0,255,0,255] : [255,0,0,255]) : borderColor);
 </script>
 
 <div class="flex flex-col gap-2">
@@ -293,8 +308,8 @@
   <!-- Canvas -->
   <div
     role="region"
-    class="box-content border-2 border-gray-700"
-    style="width: {canvasWidth}px; height: {canvasHeight}px;"
+    class="box-content border-3"
+    style="width: {canvasWidth}px; height: {canvasHeight}px; border-color: {canvasEdgeColor};"
     on:mouseleave={() => {
       hoverCellIndex = undefined;
       neighborCellIndices = [];
@@ -303,7 +318,7 @@
   >
     <canvas
       class="w-full h-full block"
-      style="color: rgba({borderColor[0]}, {borderColor[1]}, {borderColor[2]}, {borderColor[3]/255});"
+      style="background-color: rgb({borderColor[0]}, {borderColor[1]}, {borderColor[2]}, {borderColor[3]/255});"
       bind:this={canvas}
       on:contextmenu|preventDefault
     ></canvas>
@@ -332,6 +347,8 @@
   </div>
 
   <!-- Debug Info -->
+  <span>Density: {density}</span>
+  <span>Danger: {danger}</span>
   <div class="flex gap-1 bg-gray-300">
     <span>Colors</span>
     {#each numberColors as color, index}
