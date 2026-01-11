@@ -132,30 +132,6 @@ export function createBoard(
     }
   }
 
-  // Find all the places where the delaunay triangulation could
-  // be flipped between two equally valid edge arrangements
-
-  // Map from unique edge center points (Point2D string)
-  // to point indices (2 points means a viable flip)
-  const flipMap = new Map<string, number[]>();
-  tris.forEach(t => {
-    let pts: Point2D[] = t.indices.map(i => allPoints[i]);
-    for (let ia = 0; ia < 3; ia++) {
-      const ib = (ia + 1) % 3; // index of other edge point
-      const ic = (ia + 2) % 3; // index of opposite point
-      const edgeMidpoint: Point2D = average(pts[ia], pts[ib]);
-      const edgeLength = distance(pts[ia], pts[ib]);
-      const oppositePt: Point2D = pts[ic];
-      const triHeight = distance(edgeMidpoint, oppositePt);
-      if (triHeight == edgeLength / 2) {
-        const edgeMidpointStr = `${edgeMidpoint}`;
-        const flipPoints: number[] = flipMap.get(edgeMidpointStr) ?? [];
-        flipPoints.push(t.indices[ic]);
-        flipMap.set(edgeMidpointStr, flipPoints);
-      }
-    }
-  });
-
   // Convert triangles to edges
   let edges = tris.flatMap(t => {
     return [
@@ -170,26 +146,6 @@ export function createBoard(
   for (let [iA, iB] of edges) {
     adjmat[iA][iB] = true;
     adjmat[iB][iA] = true;
-  }
-
-  // Create adjacency matrix for neighbor calculation
-  let fullAdjmat: boolean[][] = adjmat.map(row => [...row]); // deep copy
-  for (let pts of flipMap.values()) {
-    if (pts.length == 2) {
-      // Add the flipped edge!
-      edges.push([pts[0], pts[1]]);
-    }
-  }
-  // Get all the edges for viable (2 point) edge flips
-  edges = Array.from(
-    flipMap.values()
-  ).filter(e =>
-    e.length == 2
-  ).map(pts => [pts[0], pts[1]]);
-  // Add the additional adjacency matrix connections
-  for (let [iA, iB] of edges) {
-    fullAdjmat[iA][iB] = true;
-    fullAdjmat[iB][iA] = true;
   }
 
   // Construct voronoi cells
@@ -222,14 +178,6 @@ export function createBoard(
     }
     regionPoints.push(regionPoints[0]); // close the loop
 
-    // Get neighbor cells for connectivity
-    neighborIndices = [];
-    for (let [iNeighbor, isNeighbor] of fullAdjmat[iPoint].entries()) {
-      if (isNeighbor && iNeighbor < allPoints.length - 4) {
-          neighborIndices.push(iNeighbor);
-      }
-    }
-
     let cell: SweeperCell = {
       index: iPoint,
       position: allPoints[iPoint],
@@ -242,6 +190,31 @@ export function createBoard(
     };
     cells.push(cell);
   }
+
+  // Reassign connectivity based on shared border points
+
+  // Create a mapping from polygon points to cell index
+  const cornerToCellMap = new Map<string, number[]>();
+  for (let cell of cells) {
+    for (let point of cell.border) {
+        const pointStr = `${point}`;
+        const cellIndices: number[] = cornerToCellMap.get(pointStr) ?? [];
+        cellIndices.push(cell.index);
+        cornerToCellMap.set(pointStr, cellIndices);
+    }
+  }
+  for (let neighborGroup of cornerToCellMap.values()) {
+    // Add neighbor group as neighbors to each of the cells (will remove duplicates and self-index later)
+    for (let neighbor of neighborGroup) {
+      cells[neighbor].neighbors = cells[neighbor].neighbors.concat(neighborGroup);
+    }
+  }
+  for (let cell of cells) {
+    let neighborSet = new Set<number>(cell.neighbors);
+    neighborSet.delete(cell.index);
+    cell.neighbors = Array.from(neighborSet);
+  }
+
 
   // Assign mines and calculate neighbor mine counts
   let mineIndices = shuffle([...Array(cells.length).keys()], random).slice(0, mineCount);
