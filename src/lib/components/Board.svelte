@@ -246,8 +246,9 @@
       gameOver = true;
       isWin = true;
       for (let c of board.cells) {
-        if (c.isMine) {
+        if (c.isMine && !c.isFlagged) {
           c.isFlagged = true;
+          board.flagCount += 1;
         }
       }
       clearInterval(timerInterval);
