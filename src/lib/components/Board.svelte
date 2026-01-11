@@ -16,7 +16,6 @@
 	let canvas: HTMLCanvasElement;
 	let deck: Deck<OrthographicView>;
 
-	let drawBoardBorder: boolean = false;
 	let drawConnections: boolean = false;
 
 	let board: Board;
@@ -166,28 +165,6 @@
 			})
 		);
 
-		if (drawBoardBorder) {
-			type LineData = { positions: [number, number][] };
-			let border = {
-				positions: [
-					[-0.5, -0.5],
-					[boardWidth - 0.5, 0 - 0.5],
-					[boardWidth - 0.5, boardHeight - 0.5],
-					[0 - 0.5, boardHeight - 0.5],
-					[0 - 0.5, 0 - 0.5],
-				],
-			};
-			layers.push(
-				new PathLayer<LineData>({
-					data: [border],
-					getPath: (d: LineData) => d.positions,
-					getColor: [0, 0, 0, 255],
-					getWidth: 3,
-					widthUnits: "pixels",
-				})
-			);
-		}
-
 		deck.setProps({
 			layers: layers,
 		});
@@ -309,13 +286,24 @@
 	$: canvasEdgeColor = getCssRgbString(
 		gameOver ? (isWin ? [0, 255, 0, 255] : [255, 0, 0, 255]) : borderColor
 	);
+
+	let face = ":)";
+	$:{
+		if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
+			face = ":o";
+		} else if (gameOver) {
+			face = isWin ? "B)" : ":(";
+		} else {
+			face = ":)";
+		}
+	}
 </script>
 
 <div class="flex flex-col gap-2">
 	<!-- Header -->
 	<div class="flex justify-between">
 		<span>{board?.mineCount - board?.flagCount}</span>
-		<span>:)</span>
+		<span>{face}</span>
 		<span>{millisecondsToTimeString(timer)}</span>
 	</div>
 
@@ -341,16 +329,12 @@
 
 	<!-- Controls -->
 	<div class="flex justify-between">
-		<div>
-			<label>
-				<input type="checkbox" bind:checked={drawBoardBorder} on:change={updateLayers} />
-				Draw Board Border
-			</label>
+		<!-- <div>
 			<label>
 				<input type="checkbox" bind:checked={drawConnections} on:change={updateLayers} />
 				Draw Connections
 			</label>
-		</div>
+		</div> -->
 
 		{#if gameOver}
 			<span>You {isWin ? "Win!" : "Lose!"}</span>
@@ -362,16 +346,6 @@
 	</div>
 
 	<!-- Debug Info -->
-	<span>Density: {density}</span>
-	<span>Danger: {danger}</span>
-	<div class="flex gap-1 bg-gray-300">
-		<span>Colors</span>
-		{#each numberColors as color, index}
-			<span
-				class="font-bold"
-				style="color: rgba({color[0]}, {color[1]}, {color[2]}, {color[3] / 255});"
-				title="Number {index + 1}">{index + 1}</span
-			>
-		{/each}
-	</div>
+	<span><b>Density:</b> {density?.toFixed(3)}</span>
+	<span><b>Danger:</b> {danger?.toFixed(3)}</span>
 </div>
