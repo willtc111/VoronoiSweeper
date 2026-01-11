@@ -1,18 +1,8 @@
-# sv
+# Voronoi Sweeper
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Classic Minesweeper uses a grid of squares.  What if it could use arbitrary arrangement of any convex polygons?
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+Voronoi Sweeper explores this idea by using a [Voronoi partitioning](https://en.wikipedia.org/wiki/Voronoi_diagram) of random points to create a Minesweeper board.  Like in the original game, cells that share corners are considered to be touching.
 
 ## Developing
 
