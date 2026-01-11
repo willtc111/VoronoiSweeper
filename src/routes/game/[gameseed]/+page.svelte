@@ -10,10 +10,10 @@
 </script>
 
 <div class="flex h-screen w-full flex-col gap-2">
-	<div class="flex w-full justify-between bg-gray-300 p-2">
+	<div class="flex w-full justify-between bg-surface-500 p-2">
 		<div>
-			<a class="button" href="/">Home</a>
-			<a class="button" href={newGameUrl} data-sveltekit-reload> New Game </a>
+			<a class="btn preset-filled-primary-500" href="/">Home</a>
+			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload> New Game </a>
 		</div>
 		Voronoi Sweeper
 		<span><b>Seed:</b>{" " + gameseed}</span>

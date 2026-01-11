@@ -1,4 +1,7 @@
 @import "tailwindcss";
-.button {
-	@apply rounded bg-blue-500 px-2 py-0 font-bold text-white hover:bg-blue-700;
-}
+
+@import '@skeletonlabs/skeleton'; 
+@import '@skeletonlabs/skeleton-svelte'; 
+/* @import '@skeletonlabs/skeleton/themes/cerberus'; */
+
+@import '../styles/custom-theme.css';
