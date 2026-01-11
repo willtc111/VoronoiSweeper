@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 .button {
-  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-0 px-2 rounded;
+	@apply rounded bg-blue-500 px-2 py-0 font-bold text-white hover:bg-blue-700;
 }

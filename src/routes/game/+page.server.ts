@@ -1,6 +1,6 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect } from "@sveltejs/kit";
 
 export function load() {
-  console.log('Redirecting back to home');
-  throw redirect(303, '..');
+	console.log("Redirecting back to home");
+	throw redirect(303, "..");
 }
