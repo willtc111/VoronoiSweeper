@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Deck, Layer, OrthographicView } from "@deck.gl/core";
 	import { PathLayer, PolygonLayer, TextLayer } from "@deck.gl/layers";
-	import { mulberry32, seedToHash, type RNG } from "$lib/Random";
+	import { generateSeed, mulberry32, seedToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
-	import { createBoard, type Board, type SweeperCell, type VoronoiCell } from "$lib/Board";
+	import { createBoard, type Board, type SweeperCell } from "$lib/Board";
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
@@ -64,6 +64,7 @@
 				maxZoom: 10,
 			},
 			views: new OrthographicView(),
+			getCursor: ({isDragging}) => isDragging ? "grabbing" : "pointer",
 		});
 	}
 
@@ -216,6 +217,7 @@
 			gameOver = true;
 			isWin = false;
 			clearInterval(timerInterval);
+			updateLayers();
 			return;
 		}
 		// Automatically expand revealed area for 0s
@@ -265,6 +267,13 @@
 		let mineCount = Math.ceil(cellCount * danger);
 		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
 
+		// DEBUG TO FIND COOL SEED, REMOVE LATER OR ELSE THIS BREAKS THE GAME
+		// let maxMines = board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0];
+		// if (maxMines < 8) {
+		// 	console.log(`${maxMines} Mines`)
+		// 	window.location = `/game/${generateSeed()}`;
+		// }
+
 		createDeck();
 		updateLayers();
 		timerInterval = setInterval(() => {
@@ -289,22 +298,36 @@
 
 	let face = ":)";
 	$:{
-		if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
-			face = ":o";
-		} else if (gameOver) {
+		if (gameOver) {
 			face = isWin ? "B)" : ":(";
+		} else if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
+			face = ":o";
 		} else {
 			face = ":)";
 		}
 	}
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 py-2">
 	<!-- Header -->
-	<div class="flex justify-between">
-		<span>{board?.mineCount - board?.flagCount}</span>
-		<span>{face}</span>
-		<span>{millisecondsToTimeString(timer)}</span>
+	<div class="grid grid-cols-3">
+		<span
+			class="px-2"
+			title="Mines remaining"
+		>
+			{board != undefined ? board?.mineCount - board?.flagCount : ""}
+		</span>
+		<span
+			class="text-center px-2"
+		>
+			{face}
+		</span>
+		<span
+			class="px-2 text-right"
+			title="Elapsed time"
+		>
+			{millisecondsToTimeString(timer)}
+		</span>
 	</div>
 
 	<!-- Canvas -->
@@ -339,13 +362,11 @@
 		{#if gameOver}
 			<span>You {isWin ? "Win!" : "Lose!"}</span>
 		{/if}
-
-		<!-- {#if hoverCellIndex != undefined}
-      <span class="px-2">Cell {hoverCellIndex}</span>
-    {/if} -->
 	</div>
 
 	<!-- Debug Info -->
-	<span><b>Density:</b> {density?.toFixed(3)}</span>
-	<span><b>Danger:</b> {danger?.toFixed(3)}</span>
+	<span><b>Seed:</b> {String(seed)}</span>
+	<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
+	<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->
 </div>

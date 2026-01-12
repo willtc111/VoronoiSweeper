@@ -1,6 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="custom-theme">
+<html lang="en" data-theme="custom-theme" data-mode="light">
 	<head>
+		<script>
+			document.documentElement.setAttribute(
+				'data-mode',
+				localStorage.mode === "dark" || (!("mode" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+					? "dark" : "light"
+			);
+		</script>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		%sveltekit.head%

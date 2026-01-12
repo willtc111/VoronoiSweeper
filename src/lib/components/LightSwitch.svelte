@@ -1,0 +1,80 @@
+<script lang="ts">
+	import { onMount } from "svelte";
+
+	/**
+	 * Is the light switch menu open
+	 */
+	let open: boolean = false;
+
+	/**
+	 * Store the mode for button toggling
+	 */
+	let mode: string|undefined;
+
+	onMount(() => {
+		mode = localStorage.getItem('mode') || undefined;
+		applyMode();
+	})
+
+	function changeMode(newMode: string | undefined = undefined) {
+		mode = newMode;
+		if (mode == undefined) {
+			localStorage.removeItem("mode");
+		} else {
+			localStorage.setItem('mode', mode);
+		}
+		applyMode();
+		open = false;
+	}
+
+	function applyMode() {
+		let isDark: boolean = localStorage.mode === "dark"
+			|| (!("mode" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+		document.documentElement.setAttribute('data-mode', isDark ? "dark" : "light");
+	}
+</script>
+
+<svelte:head>
+	<script>
+		document.documentElement.setAttribute(
+			'data-mode',
+			localStorage.mode === "dark" || (!("mode" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+				? "dark" : "light");
+	</script>
+</svelte:head>
+
+<div class="relative w-8 h-8">
+	<button
+		class="btn preset-filled-surface-200-800 w-8 h-8 {open ? "rounded-b-none" : ""}"
+		onclick={() => open = !open}
+	>
+		&#x1F4A1;
+	</button>
+
+	{#if open}
+		<nav class="absolute top-full right-0 btn-group preset-filled-surface-200-800 {open ? "rounded-tr-none" : ""} flex-col gap-1 p-2 w-fit">
+			<button
+				class="btn btn-sm preset-filled-surface-500 w-full"
+				onclick={() => changeMode("dark")}
+				disabled={mode == "dark"}
+			>
+				Dark
+			</button>
+			<button
+				class="btn btn-sm preset-filled-surface-500 w-full"
+				onclick={() => changeMode("light")}
+				disabled={mode == "light"}
+			>
+				Light
+			</button>
+			<button
+				class="btn btn-sm preset-filled-surface-500 w-full"
+				onclick={() => changeMode()}
+				disabled={mode == undefined}
+			>
+				Default
+			</button>
+		</nav>
+	{/if}
+</div>

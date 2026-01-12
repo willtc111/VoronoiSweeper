@@ -81,7 +81,6 @@ export function createBoard(
 	for (let i = 0; i < cellCount; i++) {
 		points.push(gridPositions.pop()!);
 	}
-	console.log(points);
 
 	// Perform Delaunay triangulation to calculate neighbors
 	let bounds: Point2D[] = [

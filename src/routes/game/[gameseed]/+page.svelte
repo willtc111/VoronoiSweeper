@@ -1,6 +1,10 @@
+<title>
+	Voronoi Sweeper
+</title>
+
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import Board from "$lib/components/Board.svelte";
+	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
 	import type { PageData } from "./$types";
 
@@ -9,14 +13,18 @@
 	const newGameUrl = `/game/${generateSeed()}`;
 </script>
 
-<div class="flex h-screen w-full flex-col gap-2">
-	<div class="flex w-full justify-between bg-surface-500 p-2">
-		<div>
+<div class="flex h-screen w-full flex-col">
+	<div class="grid grid-cols-3 bg-surface-50-950 p-2">
+		<div class="flex justify-left gap-2">
 			<a class="btn preset-filled-primary-500" href="/">Home</a>
 			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload> New Game </a>
 		</div>
-		Voronoi Sweeper
-		<span><b>Seed:</b>{" " + gameseed}</span>
+		<div class="text-center font-bold">
+			Voronoi Sweeper
+		</div>
+		<div class="flex justify-end">
+			<LightSwitch />
+		</div>
 	</div>
 
 	<div class="flex w-full justify-center">
