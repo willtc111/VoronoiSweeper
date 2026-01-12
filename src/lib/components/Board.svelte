@@ -4,12 +4,19 @@
 	import { generateSeed, mulberry32, seedToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
 	import { createBoard, type Board, type SweeperCell } from "$lib/Board";
+	import { browser } from "$app/environment";
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
 	let cellSize = 40;
-	$: canvasWidth = cellSize * boardWidth;
-	$: canvasHeight = cellSize * boardHeight;
+	$: canvasWidth = Math.min(
+		browser ? window?.innerWidth-20 : 1,
+		cellSize * boardWidth
+	);
+	$: canvasHeight = Math.min(
+		canvasWidth * (boardHeight/boardWidth),
+		cellSize * boardHeight
+	);
 
 	export let seed: string;
 
@@ -325,7 +332,7 @@
 	<!-- Canvas -->
 	<div
 		role="region"
-		class="box-content border-3"
+		class="box-content border-3 mx-auto"
 		style="width: {canvasWidth}px; height: {canvasHeight}px; border-color: {canvasEdgeColor};"
 		on:mouseleave={() => {
 			hoverCellIndex = undefined;
@@ -357,8 +364,10 @@
 	</div>
 
 	<!-- Debug Info -->
-	<span><b>Seed:</b> {String(seed)}</span>
-	<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
-	<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+	<div class="flex flex-col gap-1">
+		<span><b>Seed:</b> {String(seed)}</span>
+		<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
+		<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+	</div>
 	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->
 </div>

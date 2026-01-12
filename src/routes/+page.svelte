@@ -20,7 +20,10 @@
 
 <div class="flex h-full w-full flex-col items-center justify-center gap-8 p-2">
 	<section class="flex flex-col gap-2">
-		<h1 class="text-2xl font-bold">Welcome to Voronoi Sweeper</h1>
+		<h1 class="text-2xl font-bold text-center">
+			<span class="inline-block">Welcome to</span>
+			<span class="inline-block">Voronoi Sweeper</span>
+		</h1>
 		<div class="flex justify-center gap-2">
 			<button class="btn preset-filled-primary-500" on:click={() => goto(resolve(`/game/${gotd}`))}>
 				Game of the day
@@ -34,7 +37,7 @@
 		</div>
 	</section>
 
-	<section class="flex w-1/2 flex-col items-start justify-start gap-2">
+	<section class="flex w-full sm:w-1/2 flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">What is Voronoi Sweeper?</h2>
 		<span>
 			Voronoi Sweeper is a more generic implementation of the game Minesweeper. Instead of using a
@@ -57,7 +60,7 @@
 		<span> Enjoy! And let me know if you find any bugs or fun seeds. </span>
 	</section>
 
-	<section class="flex w-1/2 flex-col items-start justify-start gap-2">
+	<section class="flex w-full sm:w-1/2 flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">Interesting Seeds</h2>
 		<ul>
 			<li>
