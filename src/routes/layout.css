@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-@import '@skeletonlabs/skeleton'; 
-@import '@skeletonlabs/skeleton-svelte';
+@import "@skeletonlabs/skeleton";
+@import "@skeletonlabs/skeleton-svelte";
 
-@import '../styles/custom-theme.css';
+@import "../styles/custom-theme.css";
 
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));

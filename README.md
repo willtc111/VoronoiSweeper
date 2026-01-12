@@ -1,8 +1,8 @@
 # Voronoi Sweeper
 
-Classic Minesweeper uses a grid of squares.  What if it could use arbitrary arrangement of any convex polygons?
+Classic Minesweeper uses a grid of squares. What if it could use arbitrary arrangement of any convex polygons?
 
-Voronoi Sweeper explores this idea by using a [Voronoi partitioning](https://en.wikipedia.org/wiki/Voronoi_diagram) of random points to create a Minesweeper board.  Like in the original game, cells that share corners are considered to be touching.
+Voronoi Sweeper explores this idea by using a [Voronoi partitioning](https://en.wikipedia.org/wiki/Voronoi_diagram) of random points to create a Minesweeper board. Like in the original game, cells that share corners are considered to be touching.
 
 ## Developing
 

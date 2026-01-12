@@ -64,7 +64,7 @@
 				maxZoom: 10,
 			},
 			views: new OrthographicView(),
-			getCursor: ({isDragging}) => isDragging ? "grabbing" : "pointer",
+			getCursor: ({ isDragging }) => (isDragging ? "grabbing" : "pointer"),
 		});
 	}
 
@@ -297,7 +297,7 @@
 	);
 
 	let face = ":)";
-	$:{
+	$: {
 		if (gameOver) {
 			face = isWin ? "B)" : ":(";
 		} else if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
@@ -311,21 +311,13 @@
 <div class="flex flex-col gap-2 py-2">
 	<!-- Header -->
 	<div class="grid grid-cols-3">
-		<span
-			class="px-2"
-			title="Mines remaining"
-		>
+		<span class="px-2" title="Mines remaining">
 			{board != undefined ? board?.mineCount - board?.flagCount : ""}
 		</span>
-		<span
-			class="text-center px-2"
-		>
+		<span class="px-2 text-center">
 			{face}
 		</span>
-		<span
-			class="px-2 text-right"
-			title="Elapsed time"
-		>
+		<span class="px-2 text-right" title="Elapsed time">
 			{millisecondsToTimeString(timer)}
 		</span>
 	</div>

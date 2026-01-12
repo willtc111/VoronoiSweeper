@@ -1,4 +1,4 @@
-[data-theme='custom-theme'] {
+[data-theme="custom-theme"] {
 	--text-scaling: 1.067;
 	--base-font-color: var(--color-surface-950);
 	--base-font-color-dark: var(--color-surface-50);
@@ -204,6 +204,6 @@
 	--color-surface-contrast-950: var(--color-surface-contrast-light);
 }
 
-[data-theme='custom-theme'] .btn {
-	@apply py-0
+[data-theme="custom-theme"] .btn {
+	@apply py-0;
 }

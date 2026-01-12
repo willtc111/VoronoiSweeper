@@ -3,9 +3,11 @@
 	<head>
 		<script>
 			document.documentElement.setAttribute(
-				'data-mode',
-				localStorage.mode === "dark" || (!("mode" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
-					? "dark" : "light"
+				"data-mode",
+				localStorage.mode === "dark" ||
+					(!("mode" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+					? "dark"
+					: "light"
 			);
 		</script>
 		<meta charset="utf-8" />
