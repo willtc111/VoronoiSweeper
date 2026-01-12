@@ -28,6 +28,7 @@
 	let board: Board;
 	let hoverCellIndex: number | undefined = undefined;
 	let neighborCellIndices: number[] = [];
+	let flagging: boolean = false; // Force all clicks to be flag clicks
 
 	type Color = [number, number, number, number];
 	const numberColors: Color[] = [
@@ -203,10 +204,15 @@
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
 		updateLayers();
+		flagging = false;
 	}
 
 	function clickCell(index: number, isExpand: boolean = false) {
 		if (gameOver) {
+			return;
+		}
+		if (flagging) {
+			flagCell(index);
 			return;
 		}
 		let cell = board.cells[index];
@@ -364,10 +370,19 @@
 	</div>
 
 	<!-- Debug Info -->
-	<div class="flex flex-col gap-1">
-		<span><b>Seed:</b> {String(seed)}</span>
-		<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
-		<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+	<div class="flex flex-row justify-between">
+		<div class="flex flex-col gap-1">
+			<span><b>Seed:</b> {String(seed)}</span>
+			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
+			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+		</div>
+		<button
+			class="btn h-full aspect-square {flagging ? "preset-filled bg-error-950 text-error-50" : "preset-filled-primary-500"}"
+			on:click={() => flagging = !flagging}
+		>
+			Flag
+		</button>
 	</div>
+	
 	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->
 </div>
