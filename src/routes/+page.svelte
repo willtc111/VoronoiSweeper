@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { resolve } from "$app/paths";
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
 
@@ -21,12 +22,12 @@
 	<section class="flex flex-col gap-2">
 		<h1 class="text-2xl font-bold">Welcome to Voronoi Sweeper</h1>
 		<div class="flex justify-center gap-2">
-			<button class="btn preset-filled-primary-500" on:click={() => goto(`/game/${gotd}`)}>
+			<button class="btn preset-filled-primary-500" on:click={() => goto(resolve(`/game/${gotd}`))}>
 				Game of the day
 			</button>
 			<button
 				class="btn preset-filled-primary-500"
-				on:click={() => goto(`/game/${generateSeed()}`)}
+				on:click={() => goto(resolve(`/game/${generateSeed()}`))}
 			>
 				Random Game
 			</button>
@@ -60,11 +61,11 @@
 		<h2 class="text-lg font-bold">Interesting Seeds</h2>
 		<ul>
 			<li>
-				<a class="a" href="/game/ij2iei70">ij2iei70</a>
+				<a class="a" href={resolve("/game/ij2iei70")}>ij2iei70</a>
 				is a normal game of Minesweeper
 			</li>
 			<li>
-				<a class="a" href="/game/hmfwn2sn">hmfwn2sn</a>
+				<a class="a" href={resolve("/game/hmfwn2sn")}>hmfwn2sn</a>
 				has an 8-cell (above 6 is rare)
 			</li>
 		</ul>

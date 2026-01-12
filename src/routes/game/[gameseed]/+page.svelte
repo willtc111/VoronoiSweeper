@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Board from "$lib/components/Board.svelte";
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
@@ -6,7 +7,7 @@
 
 	export let data: PageData;
 	const gameseed = data.gameseed;
-	const newGameUrl = `/game/${generateSeed()}`;
+	const newGameUrl = resolve(`/game/${generateSeed()}`);
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -14,7 +15,7 @@
 <div class="flex h-screen w-full flex-col">
 	<div class="grid grid-cols-3 bg-surface-50-950 p-2">
 		<div class="justify-left flex gap-2">
-			<a class="btn preset-filled-primary-500" href="/">Home</a>
+			<a class="btn preset-filled-primary-500" href={resolve("/")}>Home</a>
 			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload>
 				New Game
 			</a>
