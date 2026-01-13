@@ -193,7 +193,7 @@
 		}
 	}
 
-	function flagCell(index: number) {
+	function flagCell(index: number, fromSave: boolean = false) {
 		if (gameOver) {
 			return;
 		}
@@ -201,29 +201,40 @@
 		if (cell.isRevealed) {
 			return;
 		}
+		if (!fromSave){
+			addToSave(index, true);
+		}
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
 		updateLayers();
 	}
 
-	function clickCell(index: number, isExpand: boolean = false) {
+	function clickCell(index: number, isExpand: boolean = false, fromSave: boolean = false) {
 		if (gameOver) {
 			return;
 		}
+
 		if (timerInterval == undefined) {
 			// Start the timer on the first click
 			timerInterval = setInterval(() => {
 				timer = Date.now() - startTime;
 			}, 1000 / 4);
 		}
+
 		if (flagging) {
-			flagCell(index);
+			flagCell(index, fromSave);
 			return;
 		}
+
 		let cell = board.cells[index];
 		if (cell.isFlagged || cell.isRevealed) {
 			return;
 		}
+
+		if (!isExpand && !fromSave) {
+			addToSave(index, false);
+		}
+
 		cell.isRevealed = true;
 		if (cell.isMine) {
 			// Game over
@@ -237,8 +248,10 @@
 			clearInterval(timerInterval);
 			timerInterval = undefined;
 			updateLayers();
+			clearSave();
 			return;
 		}
+
 		// Automatically expand revealed area for 0s
 		if (cell.neighborMines == 0 && !cell.isMine) {
 			for (let iNeighbor of cell.neighbors) {
@@ -262,6 +275,7 @@
 			}
 			clearInterval(timerInterval);
 			timerInterval = undefined;
+			clearSave();
 		}
 
 		// Only update the layers after the full possible expansion
@@ -270,8 +284,51 @@
 		}
 	}
 
+	type MoveRecord = {
+		index: number,
+		flag: boolean,
+	}
+
+	function addToSave(index: number, flag: boolean) {
+		let steps: string = "";
+		if (localStorage.getItem("saveSeed") != seed) {
+			localStorage.setItem("saveSeed", seed);
+			localStorage.setItem("saveStartTime", String(startTime));
+			
+		} else {
+			steps = localStorage.getItem("saveSteps") ?? "";
+		}
+		if (steps.length != 0) {
+			steps = steps + ", ";
+		}
+		steps = steps + JSON.stringify({index, flag});
+		localStorage.setItem("saveSteps", steps);
+	}
+
+	function loadSave() {
+		if (localStorage.getItem("saveSeed") != seed) {
+			// The current save is not for this game, or a save doesn't exist
+			return;
+		}
+		startTime = Number(localStorage.getItem("saveStartTime") ?? Date.now());
+		let steps: MoveRecord[] = JSON.parse(`[${localStorage.getItem("saveSteps") ?? ""}]`);
+		for (let step of steps) {
+			if (step.flag) {
+				flagCell(step.index, true);
+			} else {
+				clickCell(step.index, false, true);
+			}
+		}
+	}
+
+	function clearSave() {
+		localStorage.removeItem("saveSeed");
+		localStorage.removeItem("saveSteps");
+		localStorage.removeItem("saveStartTime");
+	}
+
 	// Game clock
-	const startTime = Date.now();
+	let startTime = Date.now();
 	let timer: number = 0;
 	let timerInterval: NodeJS.Timeout | undefined = undefined;
 
@@ -286,13 +343,7 @@
 		let cellCount = Math.ceil(boardWidth * boardHeight * density);
 		let mineCount = Math.ceil(cellCount * danger);
 		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
-
-		// DEBUG TO FIND COOL SEED, REMOVE LATER OR ELSE THIS BREAKS THE GAME
-		// let maxMines = board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0];
-		// if (maxMines < 8) {
-		// 	console.log(`${maxMines} Mines`)
-		// 	window.location = `/game/${generateSeed()}`;
-		// }
+		loadSave();
 
 		createDeck();
 		updateLayers();
@@ -300,9 +351,11 @@
 
 	function millisecondsToTimeString(ms: number): string {
 		let totalSeconds = Math.floor(ms / 1000);
-		let minutes = Math.floor(totalSeconds / 60);
-		let seconds = totalSeconds % 60;
-		return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+		let totalMinutes = Math.floor(totalSeconds / 60);
+		let hoursStr = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
+		let minutesStr = (totalMinutes % 60).toString().padStart(2, "0");
+		let secondsStr = (totalSeconds % 60).toString().padStart(2, "0");
+		return `${hoursStr}:${minutesStr}:${secondsStr}`;
 	}
 
 	function getCssRgbString(color: Color) {

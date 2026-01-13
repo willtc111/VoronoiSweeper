@@ -3,6 +3,7 @@
 	import { resolve } from "$app/paths";
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
+	import { onMount } from "svelte";
 
 	function pad0(v: number): string {
 		return String(v).padStart(2, "0");
@@ -10,6 +11,11 @@
 
 	const now = new Date();
 	const gotd = `${now.getFullYear()}${pad0(now.getMonth() + 1)}${pad0(now.getDate())}`;
+
+	let saveSeed: string | undefined = undefined;
+	onMount(() => {
+		saveSeed= localStorage.getItem("saveSeed") ?? undefined;
+	});
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -24,7 +30,7 @@
 			<span class="inline-block">Welcome to</span>
 			<span class="inline-block">Voronoi Sweeper</span>
 		</h1>
-		<div class="flex justify-center gap-2">
+		<div class="flex flex-col md:flex-row justify-center items-center gap-2">
 			<button class="btn preset-filled-primary-500" on:click={() => goto(resolve(`/game/${gotd}`))}>
 				Game of the day
 			</button>
@@ -33,6 +39,13 @@
 				on:click={() => goto(resolve(`/game/${generateSeed()}`))}
 			>
 				Random Game
+			</button>
+			<button
+				class="btn preset-filled-primary-500"
+				disabled={saveSeed == undefined}
+				on:click={() => goto(resolve(`/game/${saveSeed}`))}
+			>
+				Previous Game
 			</button>
 		</div>
 	</section>
@@ -62,14 +75,16 @@
 
 	<section class="flex w-full sm:w-1/2 flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">Interesting Seeds</h2>
-		<ul>
+		<ul class="flex flex-col gap-2">
 			<li>
-				<a class="a" href={resolve("/game/ij2iei70")}>ij2iei70</a>
-				is a normal game of Minesweeper
+				<a class="text-blue-500 underline" href={resolve("/game/ij2iei70")}>ij2iei70</a>
+				and
+				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>0t8rn4bj</a>
+				are normal games of Minesweeper.
 			</li>
 			<li>
-				<a class="a" href={resolve("/game/hmfwn2sn")}>hmfwn2sn</a>
-				has an 8-cell (above 6 is rare)
+				<a class="text-blue-500 underline" href={resolve("/game/hmfwn2sn")}>hmfwn2sn</a>
+				has an 8-cell (above 6 is rare).
 			</li>
 		</ul>
 	</section>
