@@ -204,12 +204,17 @@
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
 		updateLayers();
-		flagging = false;
 	}
 
 	function clickCell(index: number, isExpand: boolean = false) {
 		if (gameOver) {
 			return;
+		}
+		if (timerInterval == undefined) {
+			// Start the timer on the first click
+			timerInterval = setInterval(() => {
+				timer = Date.now() - startTime;
+			}, 1000 / 4);
 		}
 		if (flagging) {
 			flagCell(index);
@@ -230,6 +235,7 @@
 			gameOver = true;
 			isWin = false;
 			clearInterval(timerInterval);
+			timerInterval = undefined;
 			updateLayers();
 			return;
 		}
@@ -255,6 +261,7 @@
 				}
 			}
 			clearInterval(timerInterval);
+			timerInterval = undefined;
 		}
 
 		// Only update the layers after the full possible expansion
@@ -266,7 +273,7 @@
 	// Game clock
 	const startTime = Date.now();
 	let timer: number = 0;
-	let timerInterval: NodeJS.Timeout | undefined;
+	let timerInterval: NodeJS.Timeout | undefined = undefined;
 
 	// Cell and mine count modifiers
 	let density: number;
@@ -289,9 +296,6 @@
 
 		createDeck();
 		updateLayers();
-		timerInterval = setInterval(() => {
-			timer = Date.now() - startTime;
-		}, 1000 / 4);
 	});
 
 	function millisecondsToTimeString(ms: number): string {
