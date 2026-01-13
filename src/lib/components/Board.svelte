@@ -102,10 +102,10 @@
 					updateLayers();
 				},
 				onClick: (info, event) => {
+					const e = event.srcEvent as PointerEvent;
 					if (info.object) {
 						// Flag with right click, reveal with left click
-						console.log(event);
-						if (event?.rightButton) {
+						if (e.button == 2) {
 							flagCell(info.object.index);
 						} else {
 							clickCell(info.object.index);
