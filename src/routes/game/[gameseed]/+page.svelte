@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolve } from "$app/paths";
 	import Board from "$lib/components/Board.svelte";
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
@@ -17,16 +17,10 @@
 	<div class="absolute right-0 p-2">
 		<LightSwitch />
 	</div>
-	<div class="flex flex-col-reverse sm:grid sm:grid-cols-3 bg-surface-50-950 p-2">
-		<div class="flex justify-center sm:justify-start gap-2">
-			<a class="btn preset-filled-primary-500" href={resolve("/")}>
-				Home
-			</a>
-			<a
-				class="btn preset-filled-primary-500"
-				href={newGameUrl}
-				data-sveltekit-reload
-			>
+	<div class="flex flex-col-reverse bg-surface-50-950 p-2 sm:grid sm:grid-cols-3">
+		<div class="flex justify-center gap-2 sm:justify-start">
+			<a class="btn preset-filled-primary-500" href={resolve("/")}> Home </a>
+			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload>
 				New Game
 			</a>
 		</div>

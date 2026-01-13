@@ -9,14 +9,8 @@
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
 	let cellSize = 40;
-	$: canvasWidth = Math.min(
-		browser ? window?.innerWidth-20 : 1,
-		cellSize * boardWidth
-	);
-	$: canvasHeight = Math.min(
-		canvasWidth * (boardHeight/boardWidth),
-		cellSize * boardHeight
-	);
+	$: canvasWidth = Math.min(browser ? window?.innerWidth - 20 : 1, cellSize * boardWidth);
+	$: canvasHeight = Math.min(canvasWidth * (boardHeight / boardWidth), cellSize * boardHeight);
 
 	export let seed: string;
 
@@ -201,7 +195,7 @@
 		if (cell.isRevealed) {
 			return;
 		}
-		if (!fromSave){
+		if (!fromSave) {
 			addToSave(index, true);
 		}
 		cell.isFlagged = !cell.isFlagged;
@@ -285,23 +279,22 @@
 	}
 
 	type MoveRecord = {
-		index: number,
-		flag: boolean,
-	}
+		index: number;
+		flag: boolean;
+	};
 
 	function addToSave(index: number, flag: boolean) {
 		let steps: string = "";
 		if (localStorage.getItem("saveSeed") != seed) {
 			localStorage.setItem("saveSeed", seed);
 			localStorage.setItem("saveStartTime", String(startTime));
-			
 		} else {
 			steps = localStorage.getItem("saveSteps") ?? "";
 		}
 		if (steps.length != 0) {
 			steps = steps + ", ";
 		}
-		steps = steps + JSON.stringify({index, flag});
+		steps = steps + JSON.stringify({ index, flag });
 		localStorage.setItem("saveSteps", steps);
 	}
 
@@ -352,7 +345,9 @@
 	function millisecondsToTimeString(ms: number): string {
 		let totalSeconds = Math.floor(ms / 1000);
 		let totalMinutes = Math.floor(totalSeconds / 60);
-		let hoursStr = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
+		let hoursStr = Math.floor(totalMinutes / 60)
+			.toString()
+			.padStart(2, "0");
 		let minutesStr = (totalMinutes % 60).toString().padStart(2, "0");
 		let secondsStr = (totalSeconds % 60).toString().padStart(2, "0");
 		return `${hoursStr}:${minutesStr}:${secondsStr}`;
@@ -383,9 +378,11 @@
 			await navigator.clipboard.writeText(seed);
 			// Show "Copied" indicator for 2 seconds
 			copied = true;
-			setTimeout(() => { copied = false; }, 2000);
+			setTimeout(() => {
+				copied = false;
+			}, 2000);
 		} catch (err) {
-			console.error('Failed to copy seed:', err);
+			console.error("Failed to copy seed:", err);
 		}
 	}
 </script>
@@ -407,7 +404,7 @@
 	<!-- Canvas -->
 	<div
 		role="region"
-		class="box-content border-3 mx-auto"
+		class="mx-auto box-content border-3"
 		style="width: {canvasWidth}px; height: {canvasHeight}px; border-color: {canvasEdgeColor};"
 		on:mouseleave={() => {
 			hoverCellIndex = undefined;
@@ -441,13 +438,9 @@
 	<!-- Debug Info -->
 	<div class="flex flex-row justify-between">
 		<div class="flex flex-col gap-1">
-			<span
-				title="Game seed, click to copy"
-			>
+			<span title="Game seed, click to copy">
 				<b>Seed:</b>
-				<button
-					on:click={copySeedToClipboard}
-				>
+				<button on:click={copySeedToClipboard}>
 					{copied ? "Copied" : String(seed)}
 				</button>
 			</span>
@@ -455,12 +448,14 @@
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
 		<button
-			class="btn h-full aspect-square {flagging ? "preset-filled bg-error-950 text-error-50" : "preset-filled-primary-500"}"
-			on:click={() => flagging = !flagging}
+			class="btn aspect-square h-full {flagging
+				? 'preset-filled bg-error-950 text-error-50'
+				: 'preset-filled-primary-500'}"
+			on:click={() => (flagging = !flagging)}
 		>
 			Flag
 		</button>
 	</div>
-	
+
 	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->
 </div>
