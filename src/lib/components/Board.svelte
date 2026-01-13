@@ -376,6 +376,18 @@
 			face = ":)";
 		}
 	}
+
+	let copied: boolean = false;
+	async function copySeedToClipboard() {
+		try {
+			await navigator.clipboard.writeText(seed);
+			// Show "Copied" indicator for 2 seconds
+			copied = true;
+			setTimeout(() => { copied = false; }, 2000);
+		} catch (err) {
+			console.error('Failed to copy seed:', err);
+		}
+	}
 </script>
 
 <div class="flex flex-col gap-2 py-2">
@@ -429,7 +441,16 @@
 	<!-- Debug Info -->
 	<div class="flex flex-row justify-between">
 		<div class="flex flex-col gap-1">
-			<span><b>Seed:</b> {String(seed)}</span>
+			<span
+				title="Game seed, click to copy"
+			>
+				<b>Seed:</b>
+				<button
+					on:click={copySeedToClipboard}
+				>
+					{copied ? "Copied" : String(seed)}
+				</button>
+			</span>
 			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
