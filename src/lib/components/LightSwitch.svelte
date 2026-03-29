@@ -58,7 +58,7 @@
 
 	{#if open}
 		<nav
-			class="absolute top-full right-0 btn-group preset-filled-surface-200-800 {open
+			class="absolute z-50 top-full right-0 btn-group preset-filled-surface-200-800 {open
 				? 'rounded-tr-none'
 				: ''} w-fit flex-col gap-1 p-2"
 		>

@@ -27,13 +27,8 @@ export function circumcircleCenter(points: [Point2D, Point2D, Point2D]): Point2D
 	let y3 = points[2][1];
 	let det = 2.0 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
 	if (det == 0.0) {
-		console.error(`Points ${points[0]}, ${points[1]}, ${points[2]} are collinear`);
-		// throw new Error("Points are collinear");
-		// Return the average of the points as a fallback
+		// Points are collinear, so just use average of the points instead of the circumcenter
 		let avgPt = [(x1 + x2 + x3) / 3, (y1 + y2 + y3) / 3] as Point2D;
-		console.log(points);
-		console.log("Average at");
-		console.log(avgPt);
 		return avgPt;
 	}
 

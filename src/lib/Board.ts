@@ -27,7 +27,7 @@ export type Board = {
 	cells: SweeperCell[];
 };
 
-class Triangle {
+export class Triangle {
 	indices: [number, number, number];
 	circleCenter: Point2D;
 	circleRadius: number;
