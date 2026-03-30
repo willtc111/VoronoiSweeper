@@ -63,55 +63,69 @@
 
 <Modal modalTitle="Leaderboard" bind:this={modalRef}>
 	<div class="mx-8 my-4 w-92 font-mono text-lg">
-		<table class="w-full border-collapse">
-			<thead>
-				<tr class="text-left text-xl">
-					<th>RANK</th>
-					<th>NAME</th>
-					<th class="text-right">TIME</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each leaderboard as entry, rank}
-					<tr>
-						<td class="flex items-baseline">
-							{rank + 1}
-							<span class="text-sm">
-								{getSuffix(rank + 1)}
-							</span>
-						</td>
-						<td>
-							{#if newHighScore != undefined && entry.name == undefined}
-								<input
-									type="text"
-									bind:value={name}
-									bind:this={nameInput}
-									maxlength="3"
-									class="w-full bg-transparent uppercase focus:outline-none"
-									placeholder="___"
-								/>
-							{:else}
-								{entry.name}
-							{/if}
-						</td>
-						<td class="text-right">{millisecondsToTimeString(entry.time_ms)}</td>
+		{#if leaderboard.length == 0}
+			<span>No high scores for this game</span>
+		{:else}
+			<table class="w-full border-collapse">
+				<thead>
+					<tr class="text-left text-xl">
+						<th>RANK</th>
+						<th>NAME</th>
+						<th class="text-right">TIME</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
-		{#if newHighScore != undefined}
-			<div class="flex justify-center">
-				<button
-					class="inset-x-auto btn preset-filled-primary-500"
-					disabled={name.length != 3}
-					on:click={() => {
-						submitHighScore();
-						modalRef.closeModal();
-					}}
-				>
-					Submit
-				</button>
-			</div>
+				</thead>
+				<tbody>
+					{#each leaderboard as entry, rank}
+						<tr>
+							<td
+								class="flex items-baseline {newHighScore != undefined && entry.name == undefined
+									? 'font-bold text-success-700-300'
+									: ' text-surface-950-50'}"
+							>
+								{rank + 1}
+								<span class="text-sm">
+									{getSuffix(rank + 1)}
+								</span>
+							</td>
+							<td>
+								{#if newHighScore != undefined && entry.name == undefined}
+									<input
+										type="text"
+										bind:value={name}
+										bind:this={nameInput}
+										maxlength="3"
+										class="w-full bg-transparent uppercase focus:outline-none"
+										placeholder="___"
+									/>
+								{:else}
+									{entry.name}
+								{/if}
+							</td>
+							<td
+								class="text-right {newHighScore != undefined && entry.name == undefined
+									? 'font-bold text-success-700-300'
+									: ' text-surface-950-50'}"
+							>
+								{millisecondsToTimeString(entry.time_ms)}
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+			{#if newHighScore != undefined}
+				<div class="flex justify-center">
+					<button
+						class="inset-x-auto btn preset-filled-primary-500"
+						disabled={name.length != 3}
+						on:click={() => {
+							submitHighScore();
+							modalRef.closeModal();
+						}}
+					>
+						Submit
+					</button>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </Modal>
