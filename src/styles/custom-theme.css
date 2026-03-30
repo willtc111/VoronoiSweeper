@@ -207,3 +207,9 @@
 [data-theme="custom-theme"] .btn {
 	@apply py-0;
 }
+
+@import "tailwindcss";
+
+@theme {
+  --breakpoint-sm: 700px;
+}

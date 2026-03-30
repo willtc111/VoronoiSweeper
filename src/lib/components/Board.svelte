@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Deck, Layer, OrthographicView } from "@deck.gl/core";
 	import { PathLayer, PolygonLayer, TextLayer } from "@deck.gl/layers";
-	import { generateSeed, mulberry32, seedToHash, type RNG } from "$lib/Random";
+	import { mulberry32, seedToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
 	import { clearSave, createBoard, type Board, type SweeperCell } from "$lib/Board";
 	import { browser } from "$app/environment";
 	import { millisecondsToTimeString } from "$lib/conversions";
+	import Copyable from "$lib/components/Copyable.svelte";
+	import { page } from "$app/stores";
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
@@ -60,7 +62,9 @@
 			canvas: canvas,
 			width: canvasWidth,
 			height: canvasHeight,
-			controller: true,
+			controller: {
+				doubleClickZoom: false,
+			},
 			initialViewState: {
 				target: [boardWidth / 2 - 0.5, boardHeight / 2 - 0.5, 0],
 				zoom: Math.log2(canvasWidth / boardWidth),
@@ -274,7 +278,6 @@
 			updateLayers();
 
 			onWin(timer);
-			// clearSave();
 		}
 
 		// Only update the layers after the full possible expansion
@@ -360,20 +363,6 @@
 			face = ":)";
 		}
 	}
-
-	let copied: boolean = false;
-	async function copySeedToClipboard() {
-		try {
-			await navigator.clipboard.writeText(seed);
-			// Show "Copied" indicator for 2 seconds
-			copied = true;
-			setTimeout(() => {
-				copied = false;
-			}, 2000);
-		} catch (err) {
-			console.error("Failed to copy seed:", err);
-		}
-	}
 </script>
 
 <div class="flex flex-col gap-2 py-2">
@@ -410,40 +399,33 @@
 		></canvas>
 	</div>
 
-	<!-- Controls -->
-	<div class="flex justify-between">
-		<!-- <div>
-			<label>
-				<input type="checkbox" bind:checked={drawConnections} on:change={updateLayers} />
-				Draw Connections
-			</label>
-		</div> -->
-
-		{#if gameOver}
-			<span>You {isWin ? "Win!" : "Lose!"}</span>
-		{/if}
-	</div>
-
 	<!-- Debug Info -->
 	<div class="flex flex-row justify-between">
 		<div class="flex flex-col gap-1">
 			<span title="Game seed, click to copy">
 				<b>Seed:</b>
-				<button on:click={copySeedToClipboard}>
-					{copied ? "Copied" : String(seed)}
-				</button>
+				<Copyable value={seed}/>
 			</span>
+			<Copyable
+				class="btn bg-primary-500 w-32"
+				value={$page.url.href}
+				shownValue={"Share Link"}
+			/>
 			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
-		<button
-			class="btn aspect-square h-full {flagging
-				? 'preset-filled bg-error-950 text-error-50'
-				: 'preset-filled-primary-500'}"
-			on:click={() => (flagging = !flagging)}
-		>
-			Flag
-		</button>
+		{#if gameOver}
+			<span class="text-xl mr-1">You {isWin ? "Win!" : "Lose!"}</span>
+		{:else}
+			<button
+				class="btn aspect-square h-full {flagging
+					? 'preset-filled bg-error-950 text-error-50'
+					: 'preset-filled-primary-500'}"
+				on:click={() => (flagging = !flagging)}
+			>
+				Flag
+			</button>
+		{/if}
 	</div>
 
 	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->

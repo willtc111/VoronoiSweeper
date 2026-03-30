@@ -45,33 +45,45 @@
 				disabled={saveSeed == undefined}
 				on:click={() => goto(resolve(`/game/${saveSeed}`))}
 			>
-				Previous Game
+				Continue Game
 			</button>
 		</div>
 	</section>
 
 	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
 		<h2 class="text-lg font-bold">How to Play</h2>
-		<span>
+		<p>
 			Voronoi Sweeper is a variation of the classic puzzle game Minesweeper. All of the same
 			gameplay mechanics apply. Reveal a cell to see the number of neighboring mines. If you reveal
 			a mine, you lose. The goal is to reveal all of the non-mine cells as fast as possible. You may
 			flag cells to help keep track of where you think the mines are. Flagged cells can not be
 			clicked for revealing, but may be unflagged at any time.
-		</span>
+		</p>
+		<p>
+			Game progress is saved automatically, and you can resume your most recent game with the "Continue Game" button above.
+		</p>
+		<p>
+			When you finish a game, enter your initials in the leaderboard and submit your high score.
+		</p>
+		<p>
+			You can share the current game by sharing the URL.
+			The "Share Link" button at the bottom of the game page will copy the URL to your clipboard.
+		</p>
 	</section>
 	<section class="flex w-full flex-col items-start justify-start sm:w-1/2">
 		<h2 class="mb-2 text-lg font-bold">Controls</h2>
-		<span> Click a cell to reveal it. </span>
-		<span>
-			Right click or click with flagging toggled on (using the "Flag" button) to flag a cell.
-		</span>
-		<span>
-			Hover over a cell with the mouse cursor (or long press on mobile) to highlight the cell's
-			neighbors.
-		</span>
-		<span> Click and drag to pan the viewport. </span>
-		<span> Scroll or pinch to zoom the viewport. </span>
+		<ul class="list-disc list-outside pl-8">
+			<li> Click a cell to reveal it.</li>
+			<li>
+				Right click or click with flagging toggled on (using the "Flag" button) to flag a cell.
+			</li>
+			<li>
+				Hover over a cell with the mouse cursor (or long press on mobile) to highlight the cell's
+				neighbors.
+			</li>
+			<li> Click and drag to pan the viewport. </li>
+			<li> Scroll or pinch to zoom the viewport. </li>
+		</ul>
 	</section>
 	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
 		<h2 class="text-lg font-bold">What is Voronoi Sweeper?</h2>
