@@ -15,12 +15,12 @@ export async function getLeaderboard(gameseed: string): Promise<HighScore[]> {
 		});
 }
 
-export async function postHighScore(gameseed: string, name:string, time_ms: number) {
+export async function postHighScore(gameseed: string, name: string, time_ms: number) {
 	await fetch(`${base}/api/leaderboard`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, game_id: gameseed, time_ms: time_ms })
-  });
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ name, game_id: gameseed, time_ms: time_ms }),
+	});
 }
 
 export function insertHighScore(leaderboard: HighScore[], newScore: HighScore): HighScore[] {

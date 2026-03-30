@@ -1,4 +1,3 @@
-
 export function millisecondsToTimeString(ms: number): string {
 	let totalSeconds = Math.floor(ms / 1000);
 	let totalMinutes = Math.floor(totalSeconds / 60);

@@ -97,8 +97,7 @@
 		<ul class="flex flex-col gap-2">
 			<li>
 				<a class="text-blue-500 underline" href={resolve("/game/ij2iei70")}>ij2iei70</a>,
-				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>0t8rn4bj</a>,
-				and
+				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>0t8rn4bj</a>, and
 				<a class="text-blue-500 underline" href={resolve("/game/wj36rv1c")}>wj36rv1c</a>
 				are normal games of Minesweeper.
 			</li>

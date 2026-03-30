@@ -24,15 +24,15 @@
 	>
 		<section
 			on:click|stopPropagation
-			class="bg-surface-200-800 border-3 border-surface-50-950 rounded-lg shadow-xl"
+			class="rounded-lg border-3 border-surface-50-950 bg-surface-200-800 shadow-xl"
 		>
-			<header class="flex gap-16 justify-between border-b-3 border-surface-50-950 py-3 px-8">
+			<header class="flex justify-between gap-16 border-b-3 border-surface-50-950 px-8 py-3">
 				<h2 class="text-2xl font-bold">
 					{modalTitle}
 				</h2>
 				<button
 					on:click={closeModal}
-					on:keydown={(e) => e.key === 'Enter' && closeModal()}
+					on:keydown={(e) => e.key === "Enter" && closeModal()}
 					class="btn bg-surface-500"
 					aria-label="Close Modal"
 					disabled={disableClose}

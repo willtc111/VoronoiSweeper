@@ -12,11 +12,11 @@ const config = {
 			base: "/voronoisweeper",
 		},
 		adapter: adapter({
-      platformProxy: {
-        configPath: 'wrangler.json',
-        persist: true
-      }
-    }),
+			platformProxy: {
+				configPath: "wrangler.json",
+				persist: true,
+			},
+		}),
 	},
 };
 

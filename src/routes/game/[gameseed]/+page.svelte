@@ -61,10 +61,7 @@
 
 <title> Voronoi Sweeper </title>
 
-<Modal
-	modalTitle="Leaderboard"
-	bind:this={modalRef}
->
+<Modal modalTitle="Leaderboard" bind:this={modalRef}>
 	<div class="mx-8 my-4 w-92 font-mono text-lg">
 		<table class="w-full border-collapse">
 			<thead>
@@ -105,7 +102,7 @@
 		{#if newHighScore != undefined}
 			<div class="flex justify-center">
 				<button
-					class="btn preset-filled-primary-500 inset-x-auto"
+					class="inset-x-auto btn preset-filled-primary-500"
 					disabled={name.length != 3}
 					on:click={() => {
 						submitHighScore();
@@ -130,12 +127,16 @@
 			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload>
 				New Game
 			</a>
-			<button
-				on:click={showLeaderboard}
-				class="btn preset-filled-primary-500"
-				title="Leaderboard"
-			>
-				<svg class="h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e3e3e3"><path d="M280-120v-80h160v-124q-49-11-87.5-41.5T296-442q-75-9-125.5-65.5T120-640v-40q0-33 23.5-56.5T200-760h80v-80h400v80h80q33 0 56.5 23.5T840-680v40q0 76-50.5 132.5T664-442q-18 46-56.5 76.5T520-324v124h160v80H280Zm0-408v-152h-80v40q0 38 22 68.5t58 43.5Zm285 93q35-35 35-85v-240H360v240q0 50 35 85t85 35q50 0 85-35Zm115-93q36-13 58-43.5t22-68.5v-40h-80v152Zm-200-52Z"/></svg>
+			<button on:click={showLeaderboard} class="btn preset-filled-primary-500" title="Leaderboard">
+				<svg
+					class="h-full"
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 -960 960 960"
+					fill="#e3e3e3"
+					><path
+						d="M280-120v-80h160v-124q-49-11-87.5-41.5T296-442q-75-9-125.5-65.5T120-640v-40q0-33 23.5-56.5T200-760h80v-80h400v80h80q33 0 56.5 23.5T840-680v40q0 76-50.5 132.5T664-442q-18 46-56.5 76.5T520-324v124h160v80H280Zm0-408v-152h-80v40q0 38 22 68.5t58 43.5Zm285 93q35-35 35-85v-240H360v240q0 50 35 85t85 35q50 0 85-35Zm115-93q36-13 58-43.5t22-68.5v-40h-80v152Zm-200-52Z"
+					/></svg
+				>
 			</button>
 		</div>
 
