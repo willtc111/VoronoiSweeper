@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "voronoisweeper",
+  "compatibility_date": "2026-03-26",
+  "pages_build_output_dir": ".svelte-kit/cloudflare",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "voronoisweeper-leaderboard",
+      "database_id": "73c50998-4010-4cc8-9cb8-906a1703b6dd",
+      "migrations_dir": "./migrations"
+    }
+  ]
+}

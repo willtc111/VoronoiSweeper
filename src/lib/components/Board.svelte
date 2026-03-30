@@ -3,8 +3,9 @@
 	import { PathLayer, PolygonLayer, TextLayer } from "@deck.gl/layers";
 	import { generateSeed, mulberry32, seedToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
-	import { createBoard, type Board, type SweeperCell } from "$lib/Board";
+	import { clearSave, createBoard, type Board, type SweeperCell } from "$lib/Board";
 	import { browser } from "$app/environment";
+	import { millisecondsToTimeString } from "$lib/conversions";
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
@@ -13,6 +14,7 @@
 	$: canvasHeight = Math.min(canvasWidth * (boardHeight / boardWidth), cellSize * boardHeight);
 
 	export let seed: string;
+	export let onWin: (time: number) => void;
 
 	let canvas: HTMLCanvasElement;
 	let deck: Deck<OrthographicView>;
@@ -259,6 +261,8 @@
 
 		if (board.safeCount == board.cells.length - board.mineCount) {
 			// Player has won
+			clearInterval(timerInterval);
+			timerInterval = undefined;
 			gameOver = true;
 			isWin = true;
 			for (let c of board.cells) {
@@ -267,9 +271,10 @@
 					board.flagCount += 1;
 				}
 			}
-			clearInterval(timerInterval);
-			timerInterval = undefined;
-			clearSave();
+			updateLayers();
+
+			onWin(timer);
+			// clearSave();
 		}
 
 		// Only update the layers after the full possible expansion
@@ -304,6 +309,7 @@
 			return;
 		}
 		startTime = Number(localStorage.getItem("saveStartTime") ?? Date.now());
+		timer = Date.now() - startTime;
 		let steps: MoveRecord[] = JSON.parse(`[${localStorage.getItem("saveSteps") ?? ""}]`);
 		for (let step of steps) {
 			if (step.flag) {
@@ -312,12 +318,6 @@
 				clickCell(step.index, false, true);
 			}
 		}
-	}
-
-	function clearSave() {
-		localStorage.removeItem("saveSeed");
-		localStorage.removeItem("saveSteps");
-		localStorage.removeItem("saveStartTime");
 	}
 
 	// Game clock
@@ -341,17 +341,6 @@
 		createDeck();
 		updateLayers();
 	});
-
-	function millisecondsToTimeString(ms: number): string {
-		let totalSeconds = Math.floor(ms / 1000);
-		let totalMinutes = Math.floor(totalSeconds / 60);
-		let hoursStr = Math.floor(totalMinutes / 60)
-			.toString()
-			.padStart(2, "0");
-		let minutesStr = (totalMinutes % 60).toString().padStart(2, "0");
-		let secondsStr = (totalSeconds % 60).toString().padStart(2, "0");
-		return `${hoursStr}:${minutesStr}:${secondsStr}`;
-	}
 
 	function getCssRgbString(color: Color) {
 		return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
