@@ -30,7 +30,7 @@
 	<LightSwitch />
 </div>
 
-<div class="flex h-full w-full flex-col items-center justify-center gap-8 p-2 max-w-4xl mx-auto">
+<div class="mx-auto flex h-full w-full max-w-4xl flex-col items-center justify-center gap-8 p-2">
 	<section class="flex flex-col gap-2">
 		<h1 class="text-center text-2xl font-bold">
 			<span class="inline-block">Welcome to</span>
@@ -59,23 +59,24 @@
 	{#if latestGames.length != 0}
 		<section class="flex w-full flex-col items-start justify-start gap-2">
 			<h2 class="text-lg font-bold">Latest Games Played</h2>
-			<p>
-				Can you beat their times? Click on an entry to try the same game!
-			</p>
-			<table class="w-full max-w-lg mx-auto table-fixed border-collapse font-mono mt-1">
+			<p>Can you beat their times? Click on an entry to try the same game!</p>
+			<table class="mx-auto mt-1 w-full max-w-lg table-fixed border-collapse font-mono">
 				<thead>
 					<tr class="border-b border-surface-300-700 text-lg">
-						<th class="text-left pl-2">NAME</th>
+						<th class="pl-2 text-left">NAME</th>
 						<th class="text-left">GAME ID</th>
-						<th class="text-right pr-2">TIME</th>
+						<th class="pr-2 text-right">TIME</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each latestGames as entry}
-						<tr class="hover:bg-surface-200-800 cursor-pointer" on:click={() => goto(resolve(`/game/${entry.game_id}`))}>
-							<td class="text-left pl-2">{entry.name}</td>
+						<tr
+							class="cursor-pointer hover:bg-surface-200-800"
+							on:click={() => goto(resolve(`/game/${entry.game_id}`))}
+						>
+							<td class="pl-2 text-left">{entry.name}</td>
 							<td class="text-left">{entry.game_id}</td>
-							<td class="text-right pr-2">{millisecondsToTimeString(entry.time_ms)}</td>
+							<td class="pr-2 text-right">{millisecondsToTimeString(entry.time_ms)}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -87,27 +88,28 @@
 		<h2 class="text-lg font-bold">How to Play</h2>
 		<p>
 			Voronoi Sweeper is a variation of the classic puzzle game Minesweeper. All of the same
-			gameplay mechanics apply. Reveal a cell to see the number of neighboring mines. If you reveal
-			a mine, you lose. The goal is to reveal all of the non-mine cells as fast as possible. You may
-			flag cells to help keep track of where you think the mines are. Flagged cells can not be
-			clicked for revealing, but may be unflagged at any time.
+			gameplay mechanics apply. Reveal a cell to see the number of neighboring mines (touching walls
+			and corners). If you reveal a mine, you lose. The goal is to reveal all of the non-mine cells
+			as fast as possible. You may flag cells to help keep track of where you think the mines are.
+			Flagged cells can not be clicked for revealing, but may be unflagged at any time.
 		</p>
 		<p>
-			Game progress is saved automatically, and you can resume your most recent game with the "Continue Game" button above.
+			Game progress is saved automatically, and you can resume your most recent game with the
+			"Continue Game" button above.
 		</p>
 		<p>
 			When you finish a game, enter your initials in the leaderboard and submit your high score.
 		</p>
 		<p>
-			You can share the current game by sharing the URL.
-			The "Share Link" button at the bottom of the game page will copy the URL to your clipboard.
+			You can share the current game by sharing the URL. The "Share Link" button at the bottom of
+			the game page will copy the URL to your clipboard.
 		</p>
 	</section>
 
 	<section class="flex w-full flex-col items-start justify-start">
 		<h2 class="mb-2 text-lg font-bold">Controls</h2>
-		<ul class="list-disc list-outside pl-8">
-			<li> Click a cell to reveal it.</li>
+		<ul class="list-outside list-disc pl-8">
+			<li>Click a cell to reveal it.</li>
 			<li>
 				Right click or click with flagging toggled on (using the "Flag" button) to flag a cell.
 			</li>
@@ -115,8 +117,8 @@
 				Hover over a cell with the mouse cursor (or long press on mobile) to highlight the cell's
 				neighbors.
 			</li>
-			<li> Click and drag to pan the viewport. </li>
-			<li> Scroll or pinch to zoom the viewport. </li>
+			<li>Click and drag to pan the viewport.</li>
+			<li>Scroll or pinch to zoom the viewport.</li>
 		</ul>
 	</section>
 

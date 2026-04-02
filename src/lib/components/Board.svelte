@@ -404,18 +404,14 @@
 		<div class="flex flex-col gap-1">
 			<span title="Game seed, click to copy">
 				<b>Seed:</b>
-				<Copyable value={seed}/>
+				<Copyable value={seed} />
 			</span>
-			<Copyable
-				class="btn bg-primary-500 w-32"
-				value={$page.url.href}
-				shownValue={"Share Link"}
-			/>
+			<Copyable class="btn w-32 bg-primary-500" value={$page.url.href} shownValue={"Share Link"} />
 			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
 		{#if gameOver}
-			<span class="text-xl mr-1">You {isWin ? "Win!" : "Lose!"}</span>
+			<span class="mr-1 text-xl">You {isWin ? "Win!" : "Lose!"}</span>
 		{:else}
 			<button
 				class="btn aspect-square h-full {flagging
