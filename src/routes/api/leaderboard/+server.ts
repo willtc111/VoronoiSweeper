@@ -7,11 +7,11 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 	if (!game_id) return json({ error: "Missing game_id" }, { status: 400 });
 
 	const result = await platform!.env.DB.prepare(
-		`SELECT name, time_ms, created_at 
-              FROM leaderboard 
-              WHERE game_id = ? 
-              ORDER BY time_ms ASC 
-              LIMIT 10`
+		`SELECT name, time_ms, created_at
+			FROM leaderboard
+			WHERE game_id = ?
+			ORDER BY time_ms ASC
+			LIMIT 10`
 	)
 		.bind(game_id)
 		.all();

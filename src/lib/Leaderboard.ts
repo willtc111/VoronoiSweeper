@@ -1,5 +1,12 @@
 import { base } from "$app/paths";
 
+export type LeaderboardEntry = {
+	name: string;
+	game_id: string;
+	time_ms: number;
+	created_at: string;
+};
+
 export type HighScore = {
 	name: string | undefined;
 	time_ms: number;

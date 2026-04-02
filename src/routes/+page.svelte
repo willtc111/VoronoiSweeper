@@ -4,6 +4,12 @@
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import { generateSeed } from "$lib/Random";
 	import { onMount } from "svelte";
+	import type { PageData } from "./$types";
+	import type { LeaderboardEntry } from "$lib/Leaderboard";
+	import { millisecondsToTimeString } from "$lib/conversions";
+
+	export let data: PageData;
+	let latestGames: LeaderboardEntry[] = data.latestGames;
 
 	function pad0(v: number): string {
 		return String(v).padStart(2, "0");
@@ -50,6 +56,33 @@
 		</div>
 	</section>
 
+	{#if latestGames.length != 0}
+		<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
+			<h2 class="text-lg font-bold">Latest Games Played</h2>
+			<p>
+				Can you beat their times? Click on an entry to try the same game!
+			</p>
+			<table class="w-full max-w-128 mx-auto table-fixed border-collapse font-mono mt-1">
+				<thead>
+					<tr class="border-b border-surface-300-700 text-lg">
+						<th class="text-left pl-2">NAME</th>
+						<th class="text-left">GAME ID</th>
+						<th class="text-right pr-2">TIME</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each latestGames as entry}
+						<tr class="hover:bg-surface-200-800 cursor-pointer" on:click={() => goto(resolve(`/game/${entry.game_id}`))}>
+							<td class="text-left pl-2">{entry.name}</td>
+							<td class="text-left">{entry.game_id}</td>
+							<td class="text-right pr-2">{millisecondsToTimeString(entry.time_ms)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</section>
+	{/if}
+
 	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
 		<h2 class="text-lg font-bold">How to Play</h2>
 		<p>
@@ -70,6 +103,7 @@
 			The "Share Link" button at the bottom of the game page will copy the URL to your clipboard.
 		</p>
 	</section>
+
 	<section class="flex w-full flex-col items-start justify-start sm:w-1/2">
 		<h2 class="mb-2 text-lg font-bold">Controls</h2>
 		<ul class="list-disc list-outside pl-8">
@@ -85,6 +119,7 @@
 			<li> Scroll or pinch to zoom the viewport. </li>
 		</ul>
 	</section>
+
 	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
 		<h2 class="text-lg font-bold">What is Voronoi Sweeper?</h2>
 		<span>

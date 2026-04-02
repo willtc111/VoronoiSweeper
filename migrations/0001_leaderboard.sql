@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS leaderboard (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-	game_id TEXT NOT NULL,
+  game_id TEXT NOT NULL,
   time_ms INTEGER NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );
