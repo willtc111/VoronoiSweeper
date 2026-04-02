@@ -30,13 +30,13 @@
 	<LightSwitch />
 </div>
 
-<div class="flex h-full w-full flex-col items-center justify-center gap-8 p-2">
+<div class="flex h-full w-full flex-col items-center justify-center gap-8 p-2 max-w-4xl mx-auto">
 	<section class="flex flex-col gap-2">
 		<h1 class="text-center text-2xl font-bold">
 			<span class="inline-block">Welcome to</span>
 			<span class="inline-block">Voronoi Sweeper</span>
 		</h1>
-		<div class="flex flex-col items-center justify-center gap-2 md:flex-row">
+		<div class="flex flex-col items-center justify-center gap-2 sm:flex-row">
 			<button class="btn preset-filled-primary-500" on:click={() => goto(resolve(`/game/${gotd}`))}>
 				Game of the day
 			</button>
@@ -57,12 +57,12 @@
 	</section>
 
 	{#if latestGames.length != 0}
-		<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
+		<section class="flex w-full flex-col items-start justify-start gap-2">
 			<h2 class="text-lg font-bold">Latest Games Played</h2>
 			<p>
 				Can you beat their times? Click on an entry to try the same game!
 			</p>
-			<table class="w-full max-w-128 mx-auto table-fixed border-collapse font-mono mt-1">
+			<table class="w-full max-w-lg mx-auto table-fixed border-collapse font-mono mt-1">
 				<thead>
 					<tr class="border-b border-surface-300-700 text-lg">
 						<th class="text-left pl-2">NAME</th>
@@ -83,7 +83,7 @@
 		</section>
 	{/if}
 
-	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
+	<section class="flex w-full flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">How to Play</h2>
 		<p>
 			Voronoi Sweeper is a variation of the classic puzzle game Minesweeper. All of the same
@@ -104,7 +104,7 @@
 		</p>
 	</section>
 
-	<section class="flex w-full flex-col items-start justify-start sm:w-1/2">
+	<section class="flex w-full flex-col items-start justify-start">
 		<h2 class="mb-2 text-lg font-bold">Controls</h2>
 		<ul class="list-disc list-outside pl-8">
 			<li> Click a cell to reveal it.</li>
@@ -120,7 +120,7 @@
 		</ul>
 	</section>
 
-	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
+	<section class="flex w-full flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">What is Voronoi Sweeper?</h2>
 		<span>
 			Voronoi Sweeper is a generalized implementation of the Minesweeper concept. Instead of using a
@@ -139,7 +139,7 @@
 		<span> Enjoy! And let me know if you find any bugs or fun seeds. </span>
 	</section>
 
-	<section class="flex w-full flex-col items-start justify-start gap-2 sm:w-1/2">
+	<section class="flex w-full flex-col items-start justify-start gap-2">
 		<h2 class="text-lg font-bold">Interesting Seeds</h2>
 		<ul class="flex flex-col gap-2">
 			<li>
