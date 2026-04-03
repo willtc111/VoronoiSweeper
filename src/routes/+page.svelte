@@ -119,6 +119,9 @@
 			</li>
 			<li>Click and drag to pan the viewport.</li>
 			<li>Scroll or pinch to zoom the viewport.</li>
+			<li>
+				You can reset the viewport by refreshing the page. Your progress and time will not be lost.
+			</li>
 		</ul>
 	</section>
 
@@ -126,17 +129,23 @@
 		<h2 class="text-lg font-bold">What is Voronoi Sweeper?</h2>
 		<span>
 			Voronoi Sweeper is a generalized implementation of the Minesweeper concept. Instead of using a
-			full grid of square cells, it uses an arbitrary arrangement of convex cells. This allows for a
-			wider variety of connection patterns between neighboring cells. The nature of the Voronoi
-			partitioning means that some cells might be touching outside of the default view. If you see a
-			connection that doesn't make sense, try panning or zooming out to see the full voronoi
-			partitioning outside of the typical bounds of the board.
+			full grid of square cells, it partitions the board into convex cells using a
+			<a
+				href="https://en.wikipedia.org/wiki/Voronoi_diagram"
+				target="_blank"
+				class="text-blue-500 underline"
+			>
+				Voronoi diagram
+			</a>. This allows for a wider variety of connection patterns between neighboring cells. The
+			nature of the Voronoi partitioning means that some cells might be touching outside of the
+			default view. If you see a connection that doesn't make sense, try panning or zooming out to
+			see the full Voronoi partition outside of the typical bounds of the board.
 		</span>
 		<span>
-			Boards are generated randomly and mines are set during board generation, so there is no
+			Boards are generated pseudo-randomly and mines are set during board generation, so there is no
 			guarantee that the first cell you click won't be a mine. If you are unlucky enough to get a
 			mine on the first try, you can refresh the page to try again, or just generate a brand new
-			game.
+			game. There is also no guarantee that games are always solveable without guessing.
 		</span>
 		<span> Enjoy! And let me know if you find any bugs or fun seeds. </span>
 	</section>
