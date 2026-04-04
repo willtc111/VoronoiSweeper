@@ -8,6 +8,7 @@
 	import { millisecondsToTimeString } from "$lib/conversions";
 	import Copyable from "$lib/components/Copyable.svelte";
 	import { page } from "$app/stores";
+	import type { Point2D } from "$lib/Geometry";
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
@@ -62,9 +63,7 @@
 			canvas: canvas,
 			width: canvasWidth,
 			height: canvasHeight,
-			controller: {
-				doubleClickZoom: false,
-			},
+			controller: false,
 			initialViewState: {
 				target: [boardWidth / 2 - 0.5, boardHeight / 2 - 0.5, 0],
 				zoom: Math.log2(canvasWidth / boardWidth),
@@ -127,6 +126,24 @@
 				data: board.cells,
 				getPath: (c: SweeperCell) => c.border,
 				getColor: (c: SweeperCell) => borderColor,
+				getWidth: 3,
+				widthUnits: "pixels",
+				jointRounded: true,
+			})
+		);
+
+		// Outer border to hide any irregularities in the cells at the edges of the board
+		layers.push(
+			new PathLayer<Point2D[]>({
+				data: [[
+					[-0.5, -0.5],
+					[boardWidth - 0.5, -0.5],
+					[boardWidth - 0.5, boardHeight - 0.5],
+					[-0.5, boardHeight - 0.5],
+					[-0.5, -0.5]
+				]],
+				getPath: (b: Point2D[]) => b,
+				getColor: borderColor,
 				getWidth: 3,
 				widthUnits: "pixels",
 				jointRounded: true,

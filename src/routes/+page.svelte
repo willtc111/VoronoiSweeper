@@ -117,11 +117,6 @@
 				Hover over a cell with the mouse cursor (or long press on mobile) to highlight the cell's
 				neighbors.
 			</li>
-			<li>Click and drag to pan the viewport.</li>
-			<li>Scroll or pinch to zoom the viewport.</li>
-			<li>
-				You can reset the viewport by refreshing the page. Your progress and time will not be lost.
-			</li>
 		</ul>
 	</section>
 
@@ -136,10 +131,7 @@
 				class="text-blue-500 underline"
 			>
 				Voronoi diagram
-			</a>. This allows for a wider variety of connection patterns between neighboring cells. The
-			nature of the Voronoi partitioning means that some cells might be touching outside of the
-			default view. If you see a connection that doesn't make sense, try panning or zooming out to
-			see the full Voronoi partition outside of the typical bounds of the board.
+			</a>. This allows for a wider variety of connection patterns between neighboring cells.
 		</span>
 		<span>
 			Boards are generated pseudo-randomly and mines are set during board generation, so there is no
