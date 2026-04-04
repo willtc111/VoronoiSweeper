@@ -135,13 +135,15 @@
 		// Outer border to hide any irregularities in the cells at the edges of the board
 		layers.push(
 			new PathLayer<Point2D[]>({
-				data: [[
-					[-0.5, -0.5],
-					[boardWidth - 0.5, -0.5],
-					[boardWidth - 0.5, boardHeight - 0.5],
-					[-0.5, boardHeight - 0.5],
-					[-0.5, -0.5]
-				]],
+				data: [
+					[
+						[-0.5, -0.5],
+						[boardWidth - 0.5, -0.5],
+						[boardWidth - 0.5, boardHeight - 0.5],
+						[-0.5, boardHeight - 0.5],
+						[-0.5, -0.5],
+					],
+				],
 				getPath: (b: Point2D[]) => b,
 				getColor: borderColor,
 				getWidth: 3,

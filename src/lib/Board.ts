@@ -1,4 +1,11 @@
-import { angle_between, average, circumcircleCenter, clipPolygon, distance, type Point2D } from "./Geometry";
+import {
+	angle_between,
+	average,
+	circumcircleCenter,
+	clipPolygon,
+	distance,
+	type Point2D,
+} from "./Geometry";
 import { shuffle, type RNG } from "./Random";
 
 type Point = {
@@ -85,9 +92,9 @@ export function createBoard(
 	// Perform Delaunay triangulation to calculate neighbors
 	let bounds: Point2D[] = [
 		[-3, -3],
-		[width+2, -3],
-		[width+2, height+2],
-		[-3, height+2],
+		[width + 2, -3],
+		[width + 2, height + 2],
+		[-3, height + 2],
 	];
 	let allPoints: Point2D[] = [...points, ...bounds];
 	let tris: Triangle[] = [
@@ -179,7 +186,7 @@ export function createBoard(
 		regionPoints.push(regionPoints[0]); // close the loop
 
 		// Clip region polygons to the board bounds
-		regionPoints = clipPolygon(regionPoints, -0.5, width-0.5, -0.5, height-0.5);
+		regionPoints = clipPolygon(regionPoints, -0.5, width - 0.5, -0.5, height - 0.5);
 
 		let cell: SweeperCell = {
 			index: iPoint,

@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { distance, average, angle_between, circumcircleCenter, clipPolygon, type Point2D } from "./Geometry";
+import {
+	distance,
+	average,
+	angle_between,
+	circumcircleCenter,
+	clipPolygon,
+	type Point2D,
+} from "./Geometry";
 
 // Helper function to normalize polygon points for comparison
 function normalizePolygon(polygon: Point2D[]): Point2D[] {
@@ -7,8 +14,10 @@ function normalizePolygon(polygon: Point2D[]): Point2D[] {
 	// Find the index of the lexicographically smallest point
 	let minIdx = 0;
 	for (let i = 1; i < polygon.length; i++) {
-		if (polygon[i][0] < polygon[minIdx][0] ||
-			(polygon[i][0] === polygon[minIdx][0] && polygon[i][1] < polygon[minIdx][1])) {
+		if (
+			polygon[i][0] < polygon[minIdx][0] ||
+			(polygon[i][0] === polygon[minIdx][0] && polygon[i][1] < polygon[minIdx][1])
+		) {
 			minIdx = i;
 		}
 	}
