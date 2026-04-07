@@ -71,8 +71,38 @@
 				maxZoom: 10,
 			},
 			views: new OrthographicView(),
-			getCursor: ({ isDragging }) => (isDragging ? "grabbing" : "pointer"),
+			getCursor: () => "pointer",
+			onClick: () => {}, // disable default click handler
 		});
+	}
+
+	function onPointerUp(e: PointerEvent) {
+		const { offsetX: x, offsetY: y } = e;
+		const info = deck.pickObject({ x, y, radius: 1 });
+
+		// Flag with right click, reveal with left click
+		if (info != null) {
+			if (e.button == 2) {
+				flagCell(info.index);
+			} else {
+				clickCell(info.index);
+			}
+		}
+	}
+
+	function onHover(e: PointerEvent) {
+		const { offsetX: x, offsetY: y } = e;
+		const info = deck.pickObject({ x, y, radius: 1 });
+		const object: SweeperCell | null = info?.object ?? null;
+
+		if (object != null) {
+			neighborCellIndices = object.neighbors;
+			hoverCellIndex = object.index;
+		} else {
+			neighborCellIndices = [];
+			hoverCellIndex = undefined;
+		}
+		updateLayers();
 	}
 
 	function updateLayers() {
@@ -90,27 +120,6 @@
 				getLineWidth: 0,
 				lineWidthUnits: "pixels",
 				pickable: true,
-				onHover: (info, event) => {
-					if (info.object) {
-						neighborCellIndices = info.object.neighbors;
-						hoverCellIndex = info.object.index;
-					} else {
-						neighborCellIndices = [];
-						hoverCellIndex = undefined;
-					}
-					updateLayers();
-				},
-				onClick: (info, event) => {
-					const e = event.srcEvent as PointerEvent;
-					if (info.object) {
-						// Flag with right click, reveal with left click
-						if (e.button == 2) {
-							flagCell(info.object.index);
-						} else {
-							clickCell(info.object.index);
-						}
-					}
-				},
 				updateTriggers: {
 					getFillColor: [
 						hoverCellIndex,
@@ -415,6 +424,8 @@
 				255});"
 			bind:this={canvas}
 			on:contextmenu|preventDefault
+			on:pointerup={onPointerUp}
+			on:pointermove={onHover}
 		></canvas>
 	</div>
 
