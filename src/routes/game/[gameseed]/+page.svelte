@@ -5,7 +5,7 @@
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import Modal from "$lib/components/Modal.svelte";
 	import { millisecondsToTimeString } from "$lib/conversions";
-	import { insertHighScore, postHighScore, type HighScore } from "$lib/Leaderboard";
+	import { insertHighScore, postHighScore, sanitizeName, type HighScore } from "$lib/Leaderboard";
 	import { generateSeed } from "$lib/Random";
 	import type { PageData } from "./$types";
 
@@ -58,11 +58,6 @@
 		if (num % 10 === 3 && num % 100 !== 13) return "rd";
 		return "th";
 	}
-
-	function sanitizeName(name: string) {
-		// Remove any non-alphanumeric characters and limit to 3 characters
-		return name.toUpperCase().replace(/[^A-Z0-9 ]/g, "").substring(0, 3);
-	}
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -99,7 +94,7 @@
 										type="text"
 										bind:value={name}
 										bind:this={nameInput}
-										on:input={() => name = sanitizeName(name)}
+										on:input={() => (name = sanitizeName(name))}
 										maxlength="3"
 										class="w-full bg-transparent uppercase focus:outline-none"
 										placeholder="___"

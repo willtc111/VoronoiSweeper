@@ -51,3 +51,11 @@ export function insertHighScore(leaderboard: HighScore[], newScore: HighScore): 
 	leaderboard.splice(insertIndex, 0, newScore);
 	return leaderboard.slice(0, 10); // Keep only top 10 scores
 }
+
+export function sanitizeName(name: string) {
+	// Remove any non-alphanumeric characters and limit to 3 characters
+	return name
+		.toUpperCase()
+		.replace(/[^A-Z0-9 ]/g, "")
+		.substring(0, 3);
+}

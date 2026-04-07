@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { insertHighScore } from "./Leaderboard";
+import { insertHighScore, sanitizeName } from "./Leaderboard";
 
 describe("Leaderboard", () => {
 	const leaderboard = [
@@ -55,6 +55,20 @@ describe("Leaderboard", () => {
 			const after = insertHighScore(before, winner);
 			expect(after.length).toEqual(10);
 			expect(after).toEqual(before);
+		});
+	});
+
+	describe("sanitizeName", () => {
+		it("should convert names to uppercase", () => {
+			expect(sanitizeName("abc")).toEqual("ABC");
+		});
+
+		it("should remove non-alphanumeric characters", () => {
+			expect(sanitizeName("A1?")).toEqual("A1");
+		});
+
+		it("should limit names to 3 characters", () => {
+			expect(sanitizeName("ABCDE")).toEqual("ABC");
 		});
 	});
 });
