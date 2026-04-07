@@ -454,7 +454,7 @@
 				<b>Seed:</b>
 				<Copyable value={seed} />
 			</span>
-			<Copyable class="btn w-32 bg-primary-500" value={$page.url.href} shownValue={"Share Link"} />
+			<Copyable class="btn w-32 preset-filled-primary-500" value={$page.url.href} shownValue={"Share Link"} />
 			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
