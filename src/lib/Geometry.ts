@@ -1,5 +1,9 @@
 export type Point2D = [number, number];
 
+export function equal(a: Point2D, b: Point2D): boolean {
+	return a[0] === b[0] && a[1] === b[1];
+}
+
 export function distance(a: Point2D, b: Point2D): number {
 	let dx = b[0] - a[0];
 	let dy = b[1] - a[1];
@@ -46,6 +50,16 @@ export function circumcircleCenter(points: [Point2D, Point2D, Point2D]): Point2D
 	return [center_x, center_y];
 }
 
+/**
+ * Clip a polygon to a rectangular bounding box using the Sutherland-Hodgman algorithm
+ *
+ * @param polygon Polygon vertices
+ * @param minX Minimum x-coordinate of the bounding box
+ * @param maxX Maximum x-coordinate of the bounding box
+ * @param minY Minimum y-coordinate of the bounding box
+ * @param maxY Maximum y-coordinate of the bounding box
+ * @returns Clipped polygon vertices
+ */
 export function clipPolygon(
 	polygon: Point2D[],
 	minX: number,
@@ -88,16 +102,33 @@ export function clipPolygon(
 			return [x, a[1] + t * (b[1] - a[1])];
 		};
 
+	if (polygon.length == 0) {
+		return [];
+	}
+
+	let output = polygon
+
+	// Remove closing point if it exists
+	const polygonClosed = equal(output[0], output[output.length-1]);
+	if (polygonClosed) {
+		output = output.slice(0, -1);
+	}
+
 	// Clip against each edge of the rectangle
-	let output = polygon;
 	output = clip(output, (p) => p[1] <= maxY, hIntersect(maxY)); // top
 	output = clip(output, (p) => p[0] >= minX, vIntersect(minX)); // left
 	output = clip(output, (p) => p[1] >= minY, hIntersect(minY)); // bottom
 	output = clip(output, (p) => p[0] <= maxX, vIntersect(maxX)); // right
 
 	// Deduplicate consecutive points
-	return output.filter((p, i) => {
+	output = output.filter((p, i) => {
 		const prev = output[(i + output.length - 1) % output.length];
-		return p[0] !== prev[0] || p[1] !== prev[1];
+		return !equal(p, prev);
 	});
+
+	// Add closing point if it was originally included and the resulting polygon is not empty
+	if (polygonClosed && output.length > 1) {
+		output.push(output[0]);
+	}
+	return output;
 }

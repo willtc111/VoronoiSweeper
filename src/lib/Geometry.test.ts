@@ -243,7 +243,7 @@ describe("Geometry", () => {
 			expect(result).toEqual([]);
 		});
 
-		it("should handle polygon with points on the edge", () => {
+		it("should handle polygon edges on the boundary edge", () => {
 			const polygon: Point2D[] = [
 				[0, 0],
 				[3, 0],
@@ -252,6 +252,51 @@ describe("Geometry", () => {
 			];
 			const result = clipPolygon(polygon, 0, 3, 0, 3);
 			expect(normalizePolygon(result)).toEqual(normalizePolygon(polygon));
+		});
+
+		it("should handle polygon with start point on the edge", () => {
+			const polygon: Point2D[] = [
+				[0, 1],
+				[1, 2],
+				[2, 1],
+			];
+			const result = clipPolygon(polygon, 0, 3, 0, 3);
+			expect(normalizePolygon(result)).toEqual(normalizePolygon(polygon));
+		});
+
+		it("should handle polygon with mid point on the edge", () => {
+			const polygon: Point2D[] = [
+				[1, 2],
+				[0, 1],
+				[2, 1],
+			];
+			const result = clipPolygon(polygon, 0, 3, 0, 3);
+			expect(normalizePolygon(result)).toEqual(normalizePolygon(polygon));
+		});
+
+		it("should handle polygon with end point on the edge", () => {
+			const polygon: Point2D[] = [
+				[1, 2],
+				[2, 1],
+				[0, 1],
+			];
+			const result = clipPolygon(polygon, 0, 3, 0, 3);
+			expect(normalizePolygon(result)).toEqual(normalizePolygon(polygon));
+		});
+
+		it("should return an closed polygon if the input polygon is closed", () => {
+			const polygon: Point2D[] = [
+				[2, 2],
+				[2, 1],
+				[1, -1],
+				[-1, -1],
+				[-1, 1],
+				[1,2],
+				[2, 2], // Closing point
+			];
+			const result = clipPolygon(polygon, 0, 3, 0, 3);
+			expect(result[0]).toEqual(result[result.length - 1]);
+			expect(result.length).toBe(7);
 		});
 	});
 });
