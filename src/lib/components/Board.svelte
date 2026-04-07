@@ -254,8 +254,26 @@
 			return;
 		}
 
-		let cell = board.cells[index];
-		if (cell.isFlagged || cell.isRevealed) {
+		const cell = board.cells[index];
+		if (cell.isFlagged) {
+			return;
+		}
+
+		if (cell.isRevealed) {
+			// If the number of flagged neighbors is equal to cell value, reveal all remaining neighbors
+			const neighborFlags = cell.neighbors.reduce((count, iNeighbor) => {
+				return count + (board.cells[iNeighbor].isFlagged ? 1 : 0);
+			}, 0);
+
+			if (neighborFlags == cell.neighborMines){
+				for (let iNeighbor of cell.neighbors) {
+					let neighbor = board.cells[iNeighbor];
+					if (!neighbor.isFlagged && !neighbor.isRevealed) {
+						clickCell(neighbor.index, true);
+					}
+				}
+			}
+			updateLayers();
 			return;
 		}
 
