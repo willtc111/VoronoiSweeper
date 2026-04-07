@@ -225,8 +225,24 @@
 		if (gameOver) {
 			return;
 		}
+
 		let cell = board.cells[index];
 		if (cell.isRevealed) {
+			// If the number of unflagged neighbors is equal to the remaining mine count, flag all remaining neighbors
+			const flaggedNeighbors = cell.neighbors.reduce((count, iNeighbor) => {
+				return count + (board.cells[iNeighbor].isFlagged ? 1 : 0);
+			}, 0);
+			const remainingMines = cell.neighborMines - flaggedNeighbors;
+			const unflaggedNeighbors = cell.neighbors.filter(
+				(iNeighbor) => !board.cells[iNeighbor].isFlagged && !board.cells[iNeighbor].isRevealed
+			);
+			if (unflaggedNeighbors.length == remainingMines) {
+				for (let iNeighbor of unflaggedNeighbors) {
+					let neighbor = board.cells[iNeighbor];
+					flagCell(neighbor.index, true);
+				}
+				updateLayers();
+			}
 			return;
 		}
 		if (!fromSave) {
@@ -265,15 +281,15 @@
 				return count + (board.cells[iNeighbor].isFlagged ? 1 : 0);
 			}, 0);
 
-			if (neighborFlags == cell.neighborMines){
+			if (neighborFlags == cell.neighborMines) {
 				for (let iNeighbor of cell.neighbors) {
 					let neighbor = board.cells[iNeighbor];
 					if (!neighbor.isFlagged && !neighbor.isRevealed) {
 						clickCell(neighbor.index, true);
 					}
 				}
+				updateLayers();
 			}
-			updateLayers();
 			return;
 		}
 
