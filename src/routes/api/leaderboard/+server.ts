@@ -27,10 +27,12 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		return json({ error: "Missing fields" }, { status: 400 });
 	}
 
+	const trimmedName = name.trim().substring(0, 3); // Limit name length
+
 	await platform!.env.DB.prepare(
 		`INSERT INTO leaderboard (name, game_id, time_ms) VALUES (?, ?, ?)`
 	)
-		.bind(name, game_id, time_ms)
+		.bind(trimmedName, game_id, time_ms)
 		.run();
 
 	return json({ success: true });
