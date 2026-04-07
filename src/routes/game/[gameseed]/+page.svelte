@@ -36,6 +36,7 @@
 	}
 
 	async function submitHighScore() {
+		name = sanitizeName(name);
 		await postHighScore(gameseed, name, newHighScore!);
 
 		// Update our local copy of the leaderboard
@@ -57,6 +58,11 @@
 		if (num % 10 === 3 && num % 100 !== 13) return "rd";
 		return "th";
 	}
+
+	function sanitizeName(name: string) {
+		// Remove any non-alphanumeric characters and limit to 3 characters
+		return name.toUpperCase().replace(/[^A-Z0-9 ]/g, "").substring(0, 3);
+	}
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -66,7 +72,7 @@
 		{#if leaderboard.length == 0}
 			<span>No high scores for this game</span>
 		{:else}
-			<table class="w-full border-collapse">
+			<table class="w-full table-fixed border-collapse">
 				<thead>
 					<tr class="text-left text-xl">
 						<th>RANK</th>
@@ -93,6 +99,7 @@
 										type="text"
 										bind:value={name}
 										bind:this={nameInput}
+										on:input={() => name = sanitizeName(name)}
 										maxlength="3"
 										class="w-full bg-transparent uppercase focus:outline-none"
 										placeholder="___"
@@ -116,7 +123,7 @@
 				<div class="flex justify-center">
 					<button
 						class="inset-x-auto btn preset-filled-primary-500"
-						disabled={name.length != 3}
+						disabled={name.length != 3 || name.trim().length == 0}
 						on:click={() => {
 							submitHighScore();
 							modalRef.closeModal();
