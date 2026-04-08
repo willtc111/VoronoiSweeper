@@ -291,7 +291,7 @@ describe("Geometry", () => {
 				[1, -1],
 				[-1, -1],
 				[-1, 1],
-				[1,2],
+				[1, 2],
 				[2, 2], // Closing point
 			];
 			const result = clipPolygon(polygon, 0, 3, 0, 3);

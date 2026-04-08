@@ -106,10 +106,10 @@ export function clipPolygon(
 		return [];
 	}
 
-	let output = polygon
+	let output = polygon;
 
 	// Remove closing point if it exists
-	const polygonClosed = equal(output[0], output[output.length-1]);
+	const polygonClosed = equal(output[0], output[output.length - 1]);
 	if (polygonClosed) {
 		output = output.slice(0, -1);
 	}
