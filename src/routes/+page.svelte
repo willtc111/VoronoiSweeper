@@ -114,8 +114,16 @@
 				Right click or click with flagging toggled on (using the "Flag" button) to flag a cell.
 			</li>
 			<li>
-				Hover over a cell with the mouse cursor (or long press on mobile) to highlight the cell's
-				neighbors.
+				Hover over a cell with the mouse cursor to highlight that cell's neighbors. Press and hold
+				on mobile, but note that releasing will also click the cell.
+			</li>
+			<li>
+				Click a revealed cell when its flagged neighbors match its number to automatically reveal
+				all unflagged neighbors (chording).
+			</li>
+			<li>
+				Flag a revealed cell when its remaining unflagged neighbors must all be mines to
+				automatically flag them (flag chording).
 			</li>
 		</ul>
 	</section>
