@@ -38,7 +38,7 @@
 		</h1>
 		<div class="flex flex-col items-center justify-center gap-2 sm:flex-row">
 			<button class="btn preset-filled-primary-500" on:click={() => goto(resolve(`/game/${gotd}`))}>
-				Game of the day
+				Game of the Day
 			</button>
 			<button
 				class="btn preset-filled-primary-500"
@@ -58,7 +58,7 @@
 
 	{#if latestGames.length != 0}
 		<section class="flex w-full flex-col items-start justify-start gap-2">
-			<h2 class="text-lg font-bold">Latest Games Played</h2>
+			<h2 class="text-lg font-bold">Latest Game of the Day High Scores</h2>
 			<p>Can you beat their times? Click on an entry to try the same game!</p>
 			<table class="mx-auto mt-1 w-full max-w-lg table-fixed border-collapse font-mono">
 				<thead>
