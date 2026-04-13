@@ -61,6 +61,7 @@
 		{#if leaderboard.length == 0}
 			<span>No high scores for this game</span>
 		{:else}
+		<form>
 			<table class="w-full table-fixed border-collapse">
 				<thead>
 					<tr class="text-left text-xl">
@@ -124,6 +125,7 @@
 					</button>
 				</div>
 			{/if}
+		</form>
 		{/if}
 	</div>
 </Modal>
