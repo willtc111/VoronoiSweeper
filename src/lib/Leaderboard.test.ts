@@ -23,13 +23,13 @@ describe("Leaderboard", () => {
 			expect(leaderboard[0]).toEqual(winner);
 		});
 
-		it("should insert a new score at the top when it is the best and drop the last score", () => {
+		it("should insert a new score at the top when it is the best", () => {
 			const before = leaderboard;
 			const winner = { name: "NEW", time_ms: 1 };
 			const after = insertHighScore(before, winner);
-			expect(after.length).toEqual(10);
+			expect(after.length).toEqual(before.length + 1);
 			expect(after[0]).toEqual(winner);
-			expect(after.slice(1)).toEqual(before.slice(0, -1));
+			expect(after.slice(1)).toEqual(before);
 		});
 
 		it("should insert a new score in the middle of the leaderboard", () => {
@@ -41,20 +41,12 @@ describe("Leaderboard", () => {
 		});
 
 		it("should insert a new score at the end when it is the worst", () => {
-			const before = leaderboard.slice(0, -1);
-			const winner = { name: "NEW", time_ms: 999 };
-			const after = insertHighScore(before, winner);
-			expect(after.length).toEqual(10);
-			expect(after.slice(0, 9)).toEqual(before);
-			expect(after[9]).toEqual(winner);
-		});
-
-		it("should not insert a new score when there are already 10 better scores", () => {
 			const before = leaderboard;
 			const winner = { name: "NEW", time_ms: 999 };
 			const after = insertHighScore(before, winner);
-			expect(after.length).toEqual(10);
-			expect(after).toEqual(before);
+			expect(after.length).toEqual(before.length + 1);
+			expect(after.slice(0, -1)).toEqual(before);
+			expect(after[after.length - 1]).toEqual(winner);
 		});
 	});
 

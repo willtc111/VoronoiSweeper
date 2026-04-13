@@ -21,12 +21,6 @@
 	let newHighScore: number | undefined = undefined;
 	let name = "";
 	function onWin(time: number) {
-		if (leaderboard.length >= 10 && time > leaderboard[leaderboard.length - 1].time_ms) {
-			// Not a new high score, just show the leaderboard
-			modalRef.openModal();
-			return;
-		}
-
 		// Add the blank leaderboard entry
 		newHighScore = time;
 		leaderboard = insertHighScore(leaderboard, { time_ms: time, name: undefined });
@@ -77,45 +71,47 @@
 				</thead>
 				<tbody>
 					{#each leaderboard as entry, rank}
-						<tr>
-							<td
-								class="flex items-baseline {newHighScore != undefined && entry.name == undefined
-									? 'font-bold text-success-700-300'
-									: ' text-surface-950-50'}"
-							>
-								{rank + 1}
-								<span class="text-sm">
-									{getSuffix(rank + 1)}
-								</span>
-							</td>
-							<td>
-								{#if newHighScore != undefined && entry.name == undefined}
-									<input
-										type="text"
-										bind:value={name}
-										bind:this={nameInput}
-										on:input={() => (name = sanitizeName(name))}
-										maxlength="3"
-										class="w-full bg-transparent uppercase focus:outline-none"
-										placeholder="___"
-									/>
-								{:else}
-									{entry.name}
-								{/if}
-							</td>
-							<td
-								class="text-right {newHighScore != undefined && entry.name == undefined
-									? 'font-bold text-success-700-300'
-									: ' text-surface-950-50'}"
-							>
-								{millisecondsToTimeString(entry.time_ms)}
-							</td>
-						</tr>
+						{#if entry.name == undefined || rank < 10}
+							<tr>
+								<td
+									class="flex items-baseline {newHighScore != undefined && entry.name == undefined
+										? 'font-bold text-success-700-300'
+										: ' text-surface-950-50'}"
+								>
+									{rank + 1}
+									<span class="text-sm {rank > 9 ? "mt-4" : ""}">
+										{getSuffix(rank + 1)}
+									</span>
+								</td>
+								<td>
+									{#if newHighScore != undefined && entry.name == undefined}
+										<input
+											type="text"
+											bind:value={name}
+											bind:this={nameInput}
+											on:input={() => (name = sanitizeName(name))}
+											maxlength="3"
+											class="w-full bg-transparent uppercase focus:outline-none"
+											placeholder="___"
+										/>
+									{:else}
+										{entry.name}
+									{/if}
+								</td>
+								<td
+									class="text-right {newHighScore != undefined && entry.name == undefined
+										? 'font-bold text-success-700-300'
+										: ' text-surface-950-50'}"
+								>
+									{millisecondsToTimeString(entry.time_ms)}
+								</td>
+							</tr>
+						{/if}
 					{/each}
 				</tbody>
 			</table>
 			{#if newHighScore != undefined}
-				<div class="flex justify-center">
+				<div class="flex justify-center mt-2">
 					<button
 						class="inset-x-auto btn preset-filled-primary-500"
 						disabled={name.length != 3 || name.trim().length == 0}

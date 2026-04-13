@@ -2,7 +2,7 @@ import { sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
 
-// GET: Fetch top scores for a specific game
+// GET: Fetch leaderboard scores for a specific game
 export const GET: RequestHandler = async ({ url, platform }) => {
 	const game_id = url.searchParams.get("game_id");
 	if (!game_id) return json({ error: "Missing game_id" }, { status: 400 });
@@ -11,8 +11,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 		`SELECT name, time_ms, created_at
 			FROM leaderboard
 			WHERE game_id = ?
-			ORDER BY time_ms ASC
-			LIMIT 10`
+			ORDER BY time_ms ASC`
 	)
 		.bind(game_id)
 		.all();

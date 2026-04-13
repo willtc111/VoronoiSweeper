@@ -39,17 +39,11 @@ export function insertHighScore(leaderboard: HighScore[], newScore: HighScore): 
 
 	let insertIndex = leaderboard.findIndex((entry) => newScore.time_ms < entry.time_ms);
 	if (insertIndex === -1) {
-		if (leaderboard.length < 10) {
-			// New score is the worst score, but there's room on the leaderboard
-			return [...leaderboard, newScore];
-		} else {
-			// New score is worse than all existing scores on the full leaderboard
-			return leaderboard;
-		}
+		return [...leaderboard, newScore];
 	}
 
 	leaderboard.splice(insertIndex, 0, newScore);
-	return leaderboard.slice(0, 10); // Keep only top 10 scores
+	return leaderboard;
 }
 
 export function sanitizeName(name: string) {
