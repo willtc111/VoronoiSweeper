@@ -252,6 +252,10 @@
 			startTime = Date.now();
 		}
 
+		if (!fromSave) {
+			addToSave(index, true);
+		}
+
 		// Handle flag chording
 		let cell = board.cells[index];
 		if (cell.isRevealed) {
@@ -273,9 +277,6 @@
 			return;
 		}
 
-		if (!fromSave) {
-			addToSave(index, true);
-		}
 
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
@@ -302,6 +303,10 @@
 			return;
 		}
 
+		if (!isExpand && !fromSave) {
+			addToSave(index, false);
+		}
+
 		if (cell.isRevealed) {
 			// If the number of flagged neighbors is equal to cell value, reveal all remaining neighbors
 			const neighborFlags = cell.neighbors.reduce((count, iNeighbor) => {
@@ -318,10 +323,6 @@
 				updateLayers();
 			}
 			return;
-		}
-
-		if (!isExpand && !fromSave) {
-			addToSave(index, false);
 		}
 
 		cell.isRevealed = true;
