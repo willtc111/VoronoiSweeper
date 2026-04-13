@@ -22,6 +22,14 @@
 	onMount(() => {
 		saveSeed = localStorage.getItem("saveSeed") ?? undefined;
 	});
+
+	function reformatDateSeed(seed: string): string {
+		// YYYYMMDD format
+		const year = seed.slice(0, 4);
+		const month = seed.slice(4, 6);
+		const day = seed.slice(6, 8);
+		return `${month}/${day}/${year}`;
+	}
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -64,7 +72,7 @@
 				<thead>
 					<tr class="border-b border-surface-300-700 text-lg">
 						<th class="pl-2 text-left">NAME</th>
-						<th class="text-left">GAME ID</th>
+						<th class="text-left">GAME DATE</th>
 						<th class="pr-2 text-right">TIME</th>
 					</tr>
 				</thead>
@@ -75,7 +83,7 @@
 							on:click={() => goto(resolve(`/game/${entry.game_id}`))}
 						>
 							<td class="pl-2 text-left">{entry.name}</td>
-							<td class="text-left">{entry.game_id}</td>
+							<td class="text-left">{reformatDateSeed(entry.game_id)}</td>
 							<td class="pr-2 text-right">{millisecondsToTimeString(entry.time_ms)}</td>
 						</tr>
 					{/each}
