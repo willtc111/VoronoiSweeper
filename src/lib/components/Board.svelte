@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Deck, Layer, OrthographicView } from "@deck.gl/core";
-	import { PathLayer, PolygonLayer, TextLayer } from "@deck.gl/layers";
+	import { PolygonLayer, TextLayer } from "@deck.gl/layers";
 	import { mulberry32, seedToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
 	import { clearSave, createBoard, type Board, type SweeperCell } from "$lib/Board";
@@ -8,26 +8,100 @@
 	import { millisecondsToTimeString } from "$lib/conversions";
 	import Copyable from "$lib/components/Copyable.svelte";
 	import { page } from "$app/stores";
-	import type { Point2D } from "$lib/Geometry";
-
-	export let boardWidth: number = 15;
-	export let boardHeight: number = 15;
-	let cellSize = 40;
-	$: canvasWidth = Math.min(browser ? window?.innerWidth - 20 : 1, cellSize * boardWidth);
-	$: canvasHeight = Math.min(canvasWidth * (boardHeight / boardWidth), cellSize * boardHeight);
 
 	export let seed: string;
 	export let onWin: (time: number) => void;
 
+	export let boardWidth: number = 15;
+	export let boardHeight: number = 15;
+
+	const cellSize = 40;
+	$: canvasWidth = Math.min(browser ? window?.innerWidth - 20 : 1, cellSize * boardWidth);
+	$: canvasHeight = Math.min(canvasWidth * (boardHeight / boardWidth), cellSize * boardHeight);
+
 	let canvas: HTMLCanvasElement;
 	let deck: Deck<OrthographicView>;
 
-	let drawConnections: boolean = false;
-
+	/**
+	 * The game board
+	 */
 	let board: Board;
+	/**
+	 * The index of the current hovered cell, or undefined if not hovering over any cell
+	 */
 	let hoverCellIndex: number | undefined = undefined;
+	/**
+	 * The indices of the neighbors of the currently hovered cell
+	 */
 	let neighborCellIndices: number[] = [];
-	let flagging: boolean = false; // Force all clicks to be flag clicks
+	/**
+	 * Whether flagging mode is active (making all clicks flag clicks)
+	 */
+	let flagging: boolean = false;
+	/**
+	 * Is the game over
+	 */
+	let gameOver: boolean = false;
+	/**
+	 * Is the game won (only relevant if gameOver is true)
+	 */
+	let isWin: boolean = true;
+
+	/**
+	 * Time the game was started
+	 */
+	let startTime: number | undefined = undefined;
+	/**
+	 * Milliseconds since the game was started
+	 */
+	let timer: number = 0;
+	/**
+	 * Interval for updating the game timer
+	 */
+	let timerInterval: NodeJS.Timeout | undefined = undefined;
+
+	/**
+	 * Percentage of the grid points to make into cells (1 means a full grid, like traditional minesweeper)
+	 */
+	let density: number;
+	/**
+	 * The percentage of cells to make into mines (relative to the number of cells, not the total grid size)
+	 */
+	let danger: number;
+
+	onMount(() => {
+		let random: RNG = mulberry32(seedToHash(seed));
+		density = 0.3 + 0.7 * random();
+		danger = 0.15 + 0.1 * random();
+		let cellCount = Math.ceil(boardWidth * boardHeight * density);
+		let mineCount = Math.ceil(cellCount * danger);
+		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
+		loadSave();
+
+		createDeck();
+		updateLayers();
+
+		timerInterval = setInterval(() => {
+			if (startTime != undefined) {
+				timer = Date.now() - startTime;
+			}
+		}, 1000 / 4);
+	});
+
+	$: canvasEdgeColor = colorToCssRgbString(
+		gameOver ? (isWin ? [0, 255, 0, 255] : [255, 0, 0, 255]) : borderColor
+	);
+
+	let face = ":)";
+	$: {
+		if (gameOver) {
+			face = isWin ? "B)" : ":(";
+		} else if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
+			face = ":o";
+		} else {
+			face = ":)";
+		}
+	}
 
 	type Color = [number, number, number, number];
 	const numberColors: Color[] = [
@@ -49,10 +123,10 @@
 	const neighborFlaggedColor: Color = [220, 150, 80, 255];
 	const neighborHoverColor: Color = [185, 185, 165, 255];
 	const hiddenColor: Color = [200, 200, 200, 255];
-	const connectionColor: Color = [255, 255, 255, 100];
 
-	let gameOver: boolean = false;
-	let isWin: boolean = true;
+	function colorToCssRgbString(color: Color) {
+		return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+	}
 
 	function createDeck() {
 		if (deck) {
@@ -112,12 +186,15 @@
 
 		let layers: Layer[] = [];
 
+		// Cells
 		layers.push(
 			new PolygonLayer<SweeperCell>({
 				data: board.cells,
 				getPolygon: (c: SweeperCell) => c.border,
 				getFillColor: (c: SweeperCell) => getCellColor(c),
-				getLineWidth: 0,
+				getLineWidth: 3,
+				getLineColor: borderColor,
+				lineJointRounded: true,
 				lineWidthUnits: "pixels",
 				pickable: true,
 				updateTriggers: {
@@ -130,63 +207,8 @@
 				},
 			})
 		);
-		layers.push(
-			new PathLayer<SweeperCell>({
-				data: board.cells,
-				getPath: (c: SweeperCell) => c.border,
-				getColor: (c: SweeperCell) => borderColor,
-				getWidth: 3,
-				widthUnits: "pixels",
-				jointRounded: true,
-			})
-		);
 
-		// Outer border to hide any irregularities in the cells at the edges of the board
-		layers.push(
-			new PathLayer<Point2D[]>({
-				data: [
-					[
-						[-0.5, -0.5],
-						[boardWidth - 0.5, -0.5],
-						[boardWidth - 0.5, boardHeight - 0.5],
-						[-0.5, boardHeight - 0.5],
-						[-0.5, -0.5],
-					],
-				],
-				getPath: (b: Point2D[]) => b,
-				getColor: borderColor,
-				getWidth: 3,
-				widthUnits: "pixels",
-				jointRounded: true,
-			})
-		);
-
-		if (drawConnections) {
-			// Draw connections between neighbors
-			type LineData = { positions: [number, number][] };
-			let connectionLines: LineData[] = [];
-			for (let cell of board.cells) {
-				for (let iNeighbor of cell.neighbors) {
-					let neighbor = board.cells[iNeighbor];
-					connectionLines.push({
-						positions: [
-							[cell.position[0] + 0.075, cell.position[1] + 0.025],
-							[neighbor.position[0] - 0.05, neighbor.position[1] - 0.05],
-						],
-					});
-				}
-			}
-			layers.push(
-				new PathLayer<LineData>({
-					data: connectionLines,
-					getPath: (d: LineData) => d.positions,
-					getColor: connectionColor,
-					getWidth: 1,
-					widthUnits: "pixels",
-				})
-			);
-		}
-
+		// Cell labels
 		layers.push(
 			new TextLayer<SweeperCell>({
 				data: board.cells.filter((c) => c.isRevealed && (c.isMine || c.neighborMines > 0)),
@@ -226,6 +248,11 @@
 			return;
 		}
 
+		if (startTime == undefined) {
+			startTime = Date.now();
+		}
+
+		// Handle flag chording
 		let cell = board.cells[index];
 		if (cell.isRevealed) {
 			// If the number of unflagged neighbors is equal to the remaining mine count, flag all remaining neighbors
@@ -245,9 +272,11 @@
 			}
 			return;
 		}
+
 		if (!fromSave) {
 			addToSave(index, true);
 		}
+
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
 		updateLayers();
@@ -258,11 +287,8 @@
 			return;
 		}
 
-		if (timerInterval == undefined) {
-			// Start the timer on the first click
-			timerInterval = setInterval(() => {
-				timer = Date.now() - startTime;
-			}, 1000 / 4);
+		if (startTime == undefined) {
+			startTime = Date.now();
 		}
 
 		if (flagging) {
@@ -272,6 +298,7 @@
 
 		const cell = board.cells[index];
 		if (cell.isFlagged) {
+			// Can't click a flagged cell
 			return;
 		}
 
@@ -384,47 +411,6 @@
 			}
 		}
 	}
-
-	// Game clock
-	let startTime = Date.now();
-	let timer: number = 0;
-	let timerInterval: NodeJS.Timeout | undefined = undefined;
-
-	// Cell and mine count modifiers
-	let density: number;
-	let danger: number;
-
-	onMount(() => {
-		let random: RNG = mulberry32(seedToHash(seed));
-		density = 0.3 + 0.7 * random(); // Percentage of grid points to make into cells (1 = normal minesweeper)
-		danger = 0.15 + 0.1 * random(); // Percentage of cells to make into mines
-		let cellCount = Math.ceil(boardWidth * boardHeight * density);
-		let mineCount = Math.ceil(cellCount * danger);
-		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
-		loadSave();
-
-		createDeck();
-		updateLayers();
-	});
-
-	function getCssRgbString(color: Color) {
-		return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-	}
-
-	$: canvasEdgeColor = getCssRgbString(
-		gameOver ? (isWin ? [0, 255, 0, 255] : [255, 0, 0, 255]) : borderColor
-	);
-
-	let face = ":)";
-	$: {
-		if (gameOver) {
-			face = isWin ? "B)" : ":(";
-		} else if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
-			face = ":o";
-		} else {
-			face = ":)";
-		}
-	}
 </script>
 
 <div class="flex flex-col gap-2 py-2">
@@ -463,7 +449,7 @@
 		></canvas>
 	</div>
 
-	<!-- Debug Info -->
+	<!-- Info & Controls -->
 	<div class="flex flex-row justify-between">
 		<div class="flex flex-col gap-1">
 			<span title="Game seed, click to copy">
@@ -491,6 +477,4 @@
 			</button>
 		{/if}
 	</div>
-
-	<!-- <span><b>Max Mines:</b> {board?.cells?.filter(c => !c.isMine).map(c => c.neighborMines).sort().reverse()[0]}</span> -->
 </div>
