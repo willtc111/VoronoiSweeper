@@ -15,6 +15,10 @@
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
 
+	export let showSeed: boolean = true;
+	export let showStats: boolean = false;
+	export let saveProgress: boolean = true;
+
 	const cellSize = 40;
 	$: canvasWidth = Math.min(browser ? window?.innerWidth - 20 : 1, cellSize * boardWidth);
 	$: canvasHeight = Math.min(canvasWidth * (boardHeight / boardWidth), cellSize * boardHeight);
@@ -252,7 +256,7 @@
 			startTime = Date.now();
 		}
 
-		if (!fromSave) {
+		if (saveProgress && !fromSave) {
 			addToSave(index, true);
 		}
 
@@ -276,7 +280,6 @@
 			}
 			return;
 		}
-
 
 		cell.isFlagged = !cell.isFlagged;
 		board.flagCount += cell.isFlagged ? 1 : -1;
@@ -303,7 +306,7 @@
 			return;
 		}
 
-		if (!isExpand && !fromSave) {
+		if (saveProgress && !isExpand && !fromSave) {
 			addToSave(index, false);
 		}
 
@@ -397,8 +400,8 @@
 	}
 
 	function loadSave() {
-		if (localStorage.getItem("saveSeed") != seed) {
-			// The current save is not for this game, or a save doesn't exist
+		if (!saveProgress || localStorage.getItem("saveSeed") != seed) {
+			// The current save is not for this game, or a save doesn't exist, or saves are disabled
 			return;
 		}
 		startTime = Number(localStorage.getItem("saveStartTime") ?? Date.now());
@@ -414,7 +417,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2 py-2">
+<div class="flex flex-col gap-2">
 	<!-- Header -->
 	<div class="grid grid-cols-3">
 		<span class="px-2" title="Mines remaining">
@@ -432,7 +435,7 @@
 	<div
 		role="region"
 		class="mx-auto box-content border-3"
-		style="width: {canvasWidth}px; height: {canvasHeight}px; border-color: {canvasEdgeColor};"
+		style="width: {canvasWidth}px; height: {canvasHeight}px; border-color: {canvasEdgeColor}; background-color: {canvasEdgeColor};"
 		on:mouseleave={() => {
 			hoverCellIndex = undefined;
 			neighborCellIndices = [];
@@ -441,8 +444,7 @@
 	>
 		<canvas
 			class="block h-full w-full"
-			style="background-color: rgb({borderColor[0]}, {borderColor[1]}, {borderColor[2]}, {borderColor[3] /
-				255});"
+			style="background-color: {colorToCssRgbString(borderColor)};"
 			bind:this={canvas}
 			on:contextmenu|preventDefault
 			on:pointerup={onPointerUp}
@@ -450,9 +452,25 @@
 		></canvas>
 	</div>
 
-	<!-- Info & Controls -->
-	<div class="flex flex-row justify-between">
-		<div class="flex flex-col gap-1">
+	<!-- Flag Toggle Button / Game End Status -->
+	<div class="w-full">
+		{#if gameOver}
+			<p class="w-full text-center text-xl">You {isWin ? "Win!" : "Lose!"}</p>
+		{:else}
+			<button
+				class="btn h-16 w-full {flagging
+					? 'preset-filled bg-error-950 text-error-50'
+					: 'preset-filled-primary-500'}"
+				on:click={() => (flagging = !flagging)}
+			>
+				Flag
+			</button>
+		{/if}
+	</div>
+
+	<!-- Game Seed and Stats -->
+	{#if showSeed}
+		<div class="flex flex-row justify-between gap-1">
 			<span title="Game seed, click to copy">
 				<b>Seed:</b>
 				<Copyable value={seed} />
@@ -462,20 +480,12 @@
 				value={$page.url.href}
 				shownValue={"Share Link"}
 			/>
+		</div>
+	{/if}
+	{#if showStats}
+		<div class="flex flex-row justify-between">
 			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
 			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
 		</div>
-		{#if gameOver}
-			<span class="mr-1 text-xl">You {isWin ? "Win!" : "Lose!"}</span>
-		{:else}
-			<button
-				class="btn aspect-square h-full {flagging
-					? 'preset-filled bg-error-950 text-error-50'
-					: 'preset-filled-primary-500'}"
-				on:click={() => (flagging = !flagging)}
-			>
-				Flag
-			</button>
-		{/if}
-	</div>
+	{/if}
 </div>
