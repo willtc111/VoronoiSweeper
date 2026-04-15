@@ -62,9 +62,6 @@
 </section>
 
 <style>
-	.transitioning :global(canvas) {
-		visibility: hidden;
-	}
 	svg {
 		@apply fill-surface-950-50;
 	}

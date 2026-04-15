@@ -6,3 +6,8 @@
 @import "../styles/custom-theme.css";
 
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+/* Use this for hiding canvas elements during svelte transitions */
+.transitioning canvas {
+  visibility: hidden;
+}
