@@ -57,32 +57,35 @@
 	</button>
 
 	{#if open}
-		<nav
+		<section
 			class="absolute top-full right-0 z-50 btn-group preset-filled-surface-200-800 {open
 				? 'rounded-tr-none'
 				: ''} w-fit flex-col gap-1 p-2"
 		>
 			<button
-				class="btn w-full preset-filled-surface-500 btn-sm"
 				onclick={() => changeMode("dark")}
 				disabled={mode == "dark"}
 			>
 				Dark
 			</button>
 			<button
-				class="btn w-full preset-filled-surface-500 btn-sm"
 				onclick={() => changeMode("light")}
 				disabled={mode == "light"}
 			>
 				Light
 			</button>
 			<button
-				class="btn w-full preset-filled-surface-500 btn-sm"
 				onclick={() => changeMode()}
 				disabled={mode == undefined}
 			>
 				Default
 			</button>
-		</nav>
+		</section>
 	{/if}
 </div>
+
+<style>
+	section > button {
+		@apply btn w-full preset-filled-surface-500 btn-sm;
+	}
+</style>

@@ -423,7 +423,7 @@
 		<span class="px-2" title="Mines remaining">
 			{board != undefined ? board?.mineCount - board?.flagCount : ""}
 		</span>
-		<span class="-mt-1 h-4 text-center text-lg">
+		<span class="h-full leading-6 text-center text-lg">
 			{face}
 		</span>
 		<span class="px-2 text-right [direction:rtl]" title="Elapsed time">
@@ -458,7 +458,7 @@
 			<p class="w-full text-center text-xl">You {isWin ? "Win!" : "Lose!"}</p>
 		{:else}
 			<button
-				class="btn h-full w-full {flagging
+				class="btn h-full w-full rounded-lg {flagging
 					? 'preset-filled bg-error-950 text-error-50'
 					: 'preset-filled-primary-500'}"
 				on:click={() => (flagging = !flagging)}
@@ -472,7 +472,7 @@
 	{#if showSeed}
 		<div class="flex flex-row justify-center gap-1">
 			<Copyable
-				class="btn w-32 preset-filled-primary-500"
+				class="btn w-32 preset-filled-primary-500 rounded-lg"
 				value={$page.url.href}
 				shownValue={"Share Game"}
 				copyMessage={"Copied Link"}

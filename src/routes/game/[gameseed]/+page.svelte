@@ -65,9 +65,9 @@
 				<table class="w-full table-fixed border-collapse font-mono leading-1">
 					<thead>
 						<tr class="text-left text-xl">
-							<th class="pl-2 text-left">RANK</th>
-							<th class="text-center">NAME</th>
-							<th class="pr-2 text-right">TIME</th>
+							<th>RANK</th>
+							<th>NAME</th>
+							<th>TIME</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -78,14 +78,14 @@
 								{/if}
 								<tr class="h-6 hover:bg-surface-100-900">
 									<td
-										class="pl-2 {newHighScore != undefined && entry.name == undefined
+										class="{newHighScore != undefined && entry.name == undefined
 											? 'font-bold text-success-700-300'
 											: ' text-surface-950-50'}"
 									>
 										<span>{rank + 1}</span>
 										<span class="-ml-3 text-sm">{getSuffix(rank + 1)}</span>
 									</td>
-									<td class="text-center">
+									<td>
 										{#if newHighScore != undefined && entry.name == undefined}
 											<input
 												type="text"
@@ -101,7 +101,7 @@
 										{/if}
 									</td>
 									<td
-										class="pr-2 text-right {newHighScore != undefined && entry.name == undefined
+										class="{newHighScore != undefined && entry.name == undefined
 											? 'font-bold text-success-700-300'
 											: ' text-surface-950-50'}"
 									>
@@ -138,11 +138,15 @@
 	</div>
 	<div class="flex flex-col-reverse bg-surface-50-950 p-2 sm:grid sm:grid-cols-3">
 		<div class="flex justify-center gap-2 sm:justify-start">
-			<a class="btn preset-filled-primary-500" href={resolve("/")}> Home </a>
-			<a class="btn preset-filled-primary-500" href={newGameUrl} data-sveltekit-reload>
+			<a href={resolve("/")}> Home </a>
+			<a href={newGameUrl} data-sveltekit-reload>
 				New Game
 			</a>
-			<button on:click={showLeaderboard} class="btn preset-filled-primary-500" title="Leaderboard">
+			<button
+				on:click={showLeaderboard}
+				class="btn preset-filled-primary-500 rounded-lg py-px"
+				title="Leaderboard"
+			>
 				<svg
 					class="h-full"
 					xmlns="http://www.w3.org/2000/svg"
@@ -163,3 +167,18 @@
 		<Board seed={gameseed} {onWin} />
 	</div>
 </div>
+
+<style>
+	a {
+		@apply h-8 btn preset-filled-primary-500 rounded-lg;
+	}
+	td:nth-child(1), th:nth-child(1) {
+		@apply pl-2 text-left;
+	}
+	td:nth-child(2), th:nth-child(2) {
+		@apply text-center;
+	}
+	td:nth-child(3), th:nth-child(3) {
+		@apply pr-2 text-right;
+	}
+</style>

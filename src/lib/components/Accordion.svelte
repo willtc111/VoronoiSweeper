@@ -20,7 +20,6 @@
 					height="24px"
 					width="24px"
 					viewBox="-25 -25 50 50"
-					class="fill-surface-950-50"
 					xmlns="http://www.w3.org/2000/svg"
 				>
 					<circle r="15%" />
@@ -30,7 +29,6 @@
 					xmlns="http://www.w3.org/2000/svg"
 					height="24px"
 					width="24px"
-					class="fill-surface-950-50"
 					viewBox="0 -960 960 960"
 					><path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z" /></svg
 				>
@@ -39,7 +37,6 @@
 					xmlns="http://www.w3.org/2000/svg"
 					height="24px"
 					width="24px"
-					class="fill-surface-950-50"
 					viewBox="0 -960 960 960"
 					><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" /></svg
 				>
@@ -67,5 +64,8 @@
 <style>
 	.transitioning :global(canvas) {
 		visibility: hidden;
+	}
+	svg {
+		@apply fill-surface-950-50;
 	}
 </style>

@@ -44,35 +44,35 @@
 <div class="mx-auto flex h-full w-full max-w-4xl flex-col items-center gap-4 p-2">
 	<section class="flex flex-col gap-2">
 		<h1 class="text-center text-2xl font-bold">
-			<span class="inline-block">Welcome to</span>
-			<span class="inline-block">Voronoi Sweeper</span>
+			<span>Welcome to</span>
+			<span>Voronoi Sweeper</span>
 		</h1>
-		<div class="mx-auto flex w-fit flex-col items-center gap-2 sm:grid sm:grid-cols-3">
+		<nav class="mx-auto flex w-fit flex-col items-center gap-2 sm:grid sm:grid-cols-3">
 			<button
-				class="btn w-full preset-filled-primary-500"
+				class="headerbtn"
 				on:click={() => goto(resolve(`/game/${gotd}`))}
 			>
 				Game of the Day
 			</button>
 			<button
-				class="btn w-full preset-filled-primary-500"
+				class="headerbtn"
 				on:click={() => goto(resolve(`/game/${generateSeed()}`))}
 			>
 				Random Game
 			</button>
 			<button
-				class="btn w-full preset-filled-primary-500"
+				class="headerbtn"
 				disabled={saveSeed == undefined}
 				on:click={() => goto(resolve(`/game/${saveSeed}`))}
 			>
 				Continue Game
 			</button>
-		</div>
+		</nav>
 	</section>
 
 	{#if latestGames.length != 0}
 		<Accordion expanded={true}>
-			<h2 slot="title" class="w-full text-center text-lg font-bold">
+			<h2 slot="title" class="accordionHeader">
 				Latest Game of the Day Scores
 			</h2>
 			<p class="w-full pb-2 text-center">
@@ -81,9 +81,9 @@
 			<table class="mx-auto mt-1 w-full max-w-lg table-fixed border-collapse font-mono">
 				<thead>
 					<tr class="border-b border-surface-300-700 text-lg">
-						<th class="pl-2 text-left">NAME</th>
-						<th class="text-center">GAME DATE</th>
-						<th class="pr-2 text-right">TIME</th>
+						<th>NAME</th>
+						<th>GAME DATE</th>
+						<th>TIME</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -92,9 +92,9 @@
 							class="cursor-pointer hover:bg-surface-200-800"
 							on:click={() => goto(resolve(`/game/${entry.game_id}`))}
 						>
-							<td class="pl-2 text-left">{entry.name}</td>
-							<td class="text-center">{reformatDateSeed(entry.game_id)}</td>
-							<td class="pr-2 text-right">{millisecondsToTimeString(entry.time_ms)}</td>
+							<td>{entry.name}</td>
+							<td>{reformatDateSeed(entry.game_id)}</td>
+							<td>{millisecondsToTimeString(entry.time_ms)}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -102,8 +102,8 @@
 		</Accordion>
 	{/if}
 
-	<Accordion class="flex flex-col gap-2">
-		<h2 slot="title" class="w-full text-center text-lg font-bold">How to Play</h2>
+	<Accordion class="paragraphs">
+		<h2 slot="title" class="accordionHeader">How to Play</h2>
 		<p>
 			Voronoi Sweeper is a variation of the classic puzzle game Minesweeper. All of the same
 			gameplay mechanics apply.
@@ -149,8 +149,8 @@
 	</Accordion>
 
 	<Accordion>
-		<h2 slot="title" class="w-full text-center text-lg font-bold">Controls</h2>
-		<ul class="list-outside list-disc pl-6">
+		<h2 slot="title" class="accordionHeader">Controls</h2>
+		<ul>
 			<li>Click or tap a cell to reveal it.</li>
 			<li>
 				Right click or tap with flagging toggled on (using the "Flag" button) to flag a cell.
@@ -170,57 +170,55 @@
 		</ul>
 	</Accordion>
 
-	<Accordion>
-		<h2 slot="title" class="w-full text-center text-lg font-bold">Try It Out</h2>
-		<div class="flex w-full flex-col justify-between gap-8 overflow-clip sm:flex-row">
-			<div class="flex flex-col gap-2">
-				<p>
-					Sometimes the best way to learn is to practice with a mini version. Try out the sample
-					game
-					<span class="inline sm:hidden">below</span>
-					<span class="hidden sm:inline">to the right</span>
-					to get a feel for the mechanics.
-				</p>
-				<p>
-					Try clicking the cell in the center of the board. In this game it happens to be a 0-cell,
-					meaning it doesn't have any neighboring mines. As such, the board will automatically
-					expand the revealed area until it reaches cells with neighboring mines.
-				</p>
-				<p>
-					From there, try to deduce which cells must be mines and which must be safe based on the
-					numbers revealed. The following strageties will help:
-				</p>
-				<ul class="list-outside list-disc pl-6">
-					<li>
-						If a cell has as many unrevealed neighbor cells as its number, all of the unrevealed
-						neighbor cells must be mines (eg: a 1-cell with one unrevealed neighbor).
-					</li>
-					<li>
-						If a cell has as many neighboring flags as its number, all of the remaining unvrevealed
-						neighbors must be safe (eg: a 1-cell with one flagged neighbor and one unflagged
-						neighbor).
-					</li>
-				</ul>
-				<p>
-					If you need to try again, just refresh the page to restart the game. This demo won't save
-					your progress like the normal game does.
-				</p>
-			</div>
-			<div class="w-fit self-center overflow-clip sm:mx-auto">
-				<Board
-					seed="demo"
-					boardHeight={5}
-					boardWidth={5}
-					onWin={() => {}}
-					showSeed={false}
-					saveProgress={false}
-				/>
-			</div>
+	<Accordion class="flex w-full flex-col sm:flex-row justify-between gap-8">
+		<h2 slot="title" class="accordionHeader">Try It Out</h2>
+		<div class="paragraphs">
+			<p>
+				Sometimes the best way to learn is to practice with a mini version. Try out the sample
+				game
+				<span class="inline sm:hidden">below</span>
+				<span class="hidden sm:inline">to the right</span>
+				to get a feel for the mechanics.
+			</p>
+			<p>
+				Try clicking the cell in the center of the board. In this game it happens to be a 0-cell,
+				meaning it doesn't have any neighboring mines. As such, the board will automatically
+				expand the revealed area until it reaches cells with neighboring mines.
+			</p>
+			<p>
+				From there, try to deduce which cells must be mines and which must be safe based on the
+				numbers revealed. The following strageties will help:
+			</p>
+			<ul>
+				<li>
+					If a cell has as many unrevealed neighbor cells as its number, all of the unrevealed
+					neighbor cells must be mines (eg: a 1-cell with one unrevealed neighbor).
+				</li>
+				<li>
+					If a cell has as many neighboring flags as its number, all of the remaining unvrevealed
+					neighbors must be safe (eg: a 1-cell with one flagged neighbor and one unflagged
+					neighbor).
+				</li>
+			</ul>
+			<p>
+				If you need to try again, just refresh the page to restart the game. This demo won't save
+				your progress like the normal game does.
+			</p>
+		</div>
+		<div class="w-fit self-center overflow-clip sm:mx-auto">
+			<Board
+				seed="demo"
+				boardHeight={5}
+				boardWidth={5}
+				onWin={() => {}}
+				showSeed={false}
+				saveProgress={false}
+			/>
 		</div>
 	</Accordion>
 
 	<Accordion>
-		<h2 slot="title" class="w-full text-center text-lg font-bold">
+		<h2 slot="title" class="accordionHeader">
 			Why is it called Voronoi Sweeper?
 		</h2>
 		<p>
@@ -231,7 +229,6 @@
 			<a
 				href="https://en.wikipedia.org/wiki/Voronoi_diagram"
 				target="_blank"
-				class="text-blue-500 underline"
 			>
 				Voronoi diagram
 			</a>
@@ -242,18 +239,45 @@
 	</Accordion>
 
 	<Accordion>
-		<h2 slot="title" class="w-full text-center text-lg font-bold">Interesting Games</h2>
-		<ul class="list-outside list-disc pl-6">
+		<h2 slot="title" class="accordionHeader">Interesting Games</h2>
+		<ul>
 			<li>
-				<a class="text-blue-500 underline" href={resolve("/game/ij2iei70")}>These</a>
-				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>three</a>
-				<a class="text-blue-500 underline" href={resolve("/game/wj36rv1c")}>games</a>
+				<a href={resolve("/game/ij2iei70")}>These</a>
+				<a href={resolve("/game/0t8rn4bj")}>three</a>
+				<a href={resolve("/game/wj36rv1c")}>games</a>
 				are normal games of Minesweeper in Voronoi Sweeper.
 			</li>
 			<li>
-				<a class="text-blue-500 underline" href={resolve("/game/hmfwn2sn")}>This</a>
+				<a href={resolve("/game/hmfwn2sn")}>This</a>
 				game contains both an 8-cell and a 7-cell (above 5 is rare).
 			</li>
 		</ul>
 	</Accordion>
 </div>
+
+<style>
+	nav > button {
+		@apply btn w-full preset-filled-primary-500 rounded-xl h-10 py-4 px-8;
+	}
+	a {
+		@apply text-blue-500 underline;
+	}
+	.accordionHeader {
+		@apply w-full text-center text-lg font-bold;
+	}
+	ul {
+		@apply list-outside list-disc pl-6;
+	}
+	td:nth-child(1), th:nth-child(1) {
+		@apply pl-2 text-left;
+	}
+	td:nth-child(2), th:nth-child(2) {
+		@apply text-center;
+	}
+	td:nth-child(3), th:nth-child(3) {
+		@apply pr-2 text-right;
+	}
+	.paragraphs {
+		@apply flex flex-col gap-2;
+	}
+</style>
