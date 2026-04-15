@@ -173,31 +173,39 @@
 	<Accordion>
 		<h2 slot="title" class="w-full text-center text-lg font-bold">Try It Out</h2>
 		<div class="flex w-full flex-col justify-between gap-8 overflow-clip sm:flex-row">
-			<ul class="list-outside list-disc pl-6">
-				<li>
-					Try clicking the cell in the center of the board. It has no neighboring mines, so the
-					board will automatically expand the cleared area until it reaches cells with neighboring
-					mines.
-				</li>
-				<li>
+			<div class="flex flex-col gap-2">
+				<p>
+					Sometimes the best way to learn is to practice with a mini version. Try out the sample
+					game
+					<span class="inline sm:hidden">below</span>
+					<span class="hidden sm:inline">to the right</span>
+					to get a feel for the mechanics.
+				</p>
+				<p>
+					Try clicking the cell in the center of the board. In this game it happens to be a 0-cell,
+					meaning it doesn't have any neighboring mines. As such, the board will automatically
+					expand the revealed area until it reaches cells with neighboring mines.
+				</p>
+				<p>
 					From there, try to deduce which cells must be mines and which must be safe based on the
 					numbers revealed. The following strageties will help:
-					<ul class="list-outside list-disc pl-6">
-						<li>
-							If a cell has as many neighboring cells as its number, all of the neighboring cells
-							must be mines (eg: a 1-cell with one neighbor).
-						</li>
-						<li>
-							If a cell has as many neighboring flags as its number, any remaining neighbors must be
-							safe (eg: a 1-cell with one flagged neighbor and one unflagged neighbor).
-						</li>
-					</ul>
-				</li>
-				<li>
+				</p>
+				<ul class="list-outside list-disc pl-6">
+					<li>
+						If a cell has as many unrevealed neighbor cells as its number, all of the unrevealed
+						neighbor cells must be mines (eg: a 1-cell with one unrevealed neighbor).
+					</li>
+					<li>
+						If a cell has as many neighboring flags as its number, all of the remaining unvrevealed
+						neighbors must be safe (eg: a 1-cell with one flagged neighbor and one unflagged
+						neighbor).
+					</li>
+				</ul>
+				<p>
 					If you need to try again, just refresh the page to restart the game. This demo won't save
 					your progress like the normal game does.
-				</li>
-			</ul>
+				</p>
+			</div>
 			<div class="w-fit self-center overflow-clip sm:mx-auto">
 				<Board
 					seed="demo"
@@ -216,10 +224,10 @@
 			Why is it called Voronoi Sweeper?
 		</h2>
 		<p>
-			Voronoi Sweeper is a generalized implementation of the Minesweeper concept, hence the
-			"Sweeper" part of the name. "Voronoi" comes from the method used to generate the board.
-			Instead of using a full grid of square cells like traditional Minesweeper, it partitions the
-			board into convex cells using a
+			Voronoi Sweeper is a generalized implementation of Minesweeper, hence the "Sweeper" part of
+			the name. "Voronoi" comes from the method used to generate the board. Instead of using a full
+			grid of square cells like traditional Minesweeper, it partitions the board into convex cells
+			using a
 			<a
 				href="https://en.wikipedia.org/wiki/Voronoi_diagram"
 				target="_blank"
