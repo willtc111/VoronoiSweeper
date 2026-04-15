@@ -136,16 +136,16 @@
 			"Continue Game" button above.
 		</p>
 		<p>
-			You can share the current game by sharing the URL. The "Share Link" button at the bottom of
+			You can share the current game by sharing the URL. The "Share Game" button at the bottom of
 			the game page will copy the URL to your clipboard.
 		</p>
 		<p>
 			The mines are set during board generation, so there is no guarantee that the first cell you
-			click won't be a mine. If you are unlucky enough to get a mine on the first try, you can
-			refresh the page to try again, or just generate a brand new game. There is also no guarantee
+			click won't be a mine. If you are unlucky enough to reveal a mine on the first try, you can
+			refresh the page to try again or just generate a brand new game. There is also no guarantee
 			that games are always solveable without guessing.
 		</p>
-		<p>Enjoy! And let me know if you find any bugs or fun seeds.</p>
+		<p>Enjoy! And let me know if you find any bugs or interesting random games.</p>
 	</Accordion>
 
 	<Accordion>
@@ -242,17 +242,17 @@
 	</Accordion>
 
 	<Accordion>
-		<h2 slot="title" class="w-full text-center text-lg font-bold">Interesting Seeds</h2>
+		<h2 slot="title" class="w-full text-center text-lg font-bold">Interesting Games</h2>
 		<ul class="list-outside list-disc pl-6">
 			<li>
-				<a class="text-blue-500 underline" href={resolve("/game/ij2iei70")}>ij2iei70</a>,
-				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>0t8rn4bj</a>, and
-				<a class="text-blue-500 underline" href={resolve("/game/wj36rv1c")}>wj36rv1c</a>
-				are normal games of Minesweeper.
+				<a class="text-blue-500 underline" href={resolve("/game/ij2iei70")}>These</a>
+				<a class="text-blue-500 underline" href={resolve("/game/0t8rn4bj")}>three</a>
+				<a class="text-blue-500 underline" href={resolve("/game/wj36rv1c")}>games</a>
+				are normal games of Minesweeper in Voronoi Sweeper.
 			</li>
 			<li>
-				<a class="text-blue-500 underline" href={resolve("/game/hmfwn2sn")}>hmfwn2sn</a>
-				has an 8-cell (above 6 is rare).
+				<a class="text-blue-500 underline" href={resolve("/game/hmfwn2sn")}>This</a>
+				game contains both an 8-cell and a 7-cell (above 5 is rare).
 			</li>
 		</ul>
 	</Accordion>
