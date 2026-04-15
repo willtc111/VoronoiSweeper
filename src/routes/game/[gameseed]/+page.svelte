@@ -57,34 +57,35 @@
 <title> Voronoi Sweeper </title>
 
 <Modal modalTitle="Leaderboard" bind:this={modalRef}>
-	<div class="mx-8 my-4 w-92 font-mono text-lg">
+	<div class="mx-6 mb-4 max-w-92 text-lg">
 		{#if leaderboard.length == 0}
 			<span>No high scores for this game</span>
 		{:else}
 			<form>
-				<table class="w-full table-fixed border-collapse">
+				<table class="w-full table-fixed border-collapse leading-1 font-mono">
 					<thead>
 						<tr class="text-left text-xl">
-							<th>RANK</th>
-							<th>NAME</th>
-							<th class="text-right">TIME</th>
+							<th class="pl-2 text-left">RANK</th>
+							<th class="text-center">NAME</th>
+							<th class="pr-2 text-right">TIME</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each leaderboard as entry, rank}
 							{#if entry.name == undefined || rank < 10}
-								<tr>
+								{#if entry.name == undefined && rank >= 10}
+									<tr class="h-2"></tr> <!-- spacer row -->
+								{/if}
+								<tr class="h-6 hover:bg-surface-100-900">
 									<td
-										class="flex items-baseline {newHighScore != undefined && entry.name == undefined
+										class="pl-2 {newHighScore != undefined && entry.name == undefined
 											? 'font-bold text-success-700-300'
 											: ' text-surface-950-50'}"
 									>
-										{rank + 1}
-										<span class="text-sm {rank > 9 ? 'mt-4' : ''}">
-											{getSuffix(rank + 1)}
-										</span>
+										<span>{rank + 1}</span>
+										<span class="text-sm -ml-3">{getSuffix(rank + 1)}</span>
 									</td>
-									<td>
+									<td class="text-center">
 										{#if newHighScore != undefined && entry.name == undefined}
 											<input
 												type="text"
@@ -92,7 +93,7 @@
 												bind:this={nameInput}
 												on:input={() => (name = sanitizeName(name))}
 												maxlength="3"
-												class="w-full bg-transparent uppercase focus:outline-none"
+												class="h-full bg-transparent uppercase focus:outline-none w-9"
 												placeholder="___"
 											/>
 										{:else}
@@ -100,7 +101,7 @@
 										{/if}
 									</td>
 									<td
-										class="text-right {newHighScore != undefined && entry.name == undefined
+										class="pr-2 text-right {newHighScore != undefined && entry.name == undefined
 											? 'font-bold text-success-700-300'
 											: ' text-surface-950-50'}"
 									>
@@ -112,7 +113,7 @@
 					</tbody>
 				</table>
 				{#if newHighScore != undefined}
-					<div class="mt-2 flex justify-center">
+					<div class="mt-3 flex justify-center">
 						<button
 							class="inset-x-auto btn preset-filled-primary-500"
 							disabled={name.length != 3 || name.trim().length == 0}

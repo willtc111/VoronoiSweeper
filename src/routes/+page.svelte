@@ -89,7 +89,7 @@
 				<tbody>
 					{#each latestGames as entry}
 						<tr
-							class="cursor-pointer hover:rounded hover:bg-surface-200-800"
+							class="cursor-pointer hover:bg-surface-200-800"
 							on:click={() => goto(resolve(`/game/${entry.game_id}`))}
 						>
 							<td class="pl-2 text-left">{entry.name}</td>

@@ -1,12 +1,13 @@
 <script lang="ts">
 	export let value: string;
 	export let shownValue = value;
+	export let copyMessage: string = "Copied";
 
 	let copied: boolean = false;
 	async function copyToClipboard() {
 		try {
 			await navigator.clipboard.writeText(value);
-			// Show "Copied" indicator for 2 seconds
+			// Show copied message for 2 seconds
 			copied = true;
 			setTimeout(() => {
 				copied = false;
@@ -18,5 +19,5 @@
 </script>
 
 <button {...$$props} on:click={copyToClipboard}>
-	{copied ? "Copied" : String(shownValue)}
+	{copied ? copyMessage : String(shownValue)}
 </button>

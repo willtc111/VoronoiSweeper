@@ -19,21 +19,21 @@
 {#if showModal}
 	<div
 		on:click={closeModal}
-		transition:fly={{ y: -200, duration: 200 }}
-		class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs"
+		class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs backdrop-brightness-80 dark:backdrop-brightness-110 px-4"
 	>
 		<section
 			on:click|stopPropagation
-			class="rounded-lg border-3 border-surface-50-950 bg-surface-200-800 shadow-xl"
+			transition:fly={{ y: -200, duration: 200 }}
+			class="rounded-lg bg-surface-50-950 shadow-xl"
 		>
-			<header class="flex justify-between gap-16 border-b-3 border-surface-50-950 px-8 py-3">
-				<h2 class="text-2xl font-bold">
+			<header class="relative px-8 pt-3 pb-2">
+				<h2 class="text-2xl font-bold w-full text-center">
 					{modalTitle}
 				</h2>
 				<button
 					on:click={closeModal}
 					on:keydown={(e) => e.key === "Enter" && closeModal()}
-					class="btn bg-surface-500"
+					class="btn h-10 w-10 absolute top-0 right-0"
 					aria-label="Close Modal"
 					disabled={disableClose}
 				>

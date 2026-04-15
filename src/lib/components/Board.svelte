@@ -470,15 +470,12 @@
 
 	<!-- Game Seed and Stats -->
 	{#if showSeed}
-		<div class="flex flex-row justify-between gap-1">
-			<span title="Game seed, click to copy">
-				<b>Seed:</b>
-				<Copyable value={seed} />
-			</span>
+		<div class="flex flex-row justify-center gap-1">
 			<Copyable
 				class="btn w-32 preset-filled-primary-500"
 				value={$page.url.href}
-				shownValue={"Share Link"}
+				shownValue={"Share Game"}
+				copyMessage={"Copied Link"}
 			/>
 		</div>
 	{/if}
