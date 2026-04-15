@@ -151,9 +151,9 @@
 	<Accordion>
 		<h2 slot="title" class="w-full text-center text-lg font-bold">Controls</h2>
 		<ul class="list-outside list-disc pl-6">
-			<li>Click a cell to reveal it.</li>
+			<li>Click or tap a cell to reveal it.</li>
 			<li>
-				Right click or click with flagging toggled on (using the "Flag" button) to flag a cell.
+				Right click or tap with flagging toggled on (using the "Flag" button) to flag a cell.
 			</li>
 			<li>
 				Hover over a cell with the mouse cursor to highlight that cell's neighbors. Press and hold
