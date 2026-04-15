@@ -121,7 +121,7 @@
 	const borderColor: Color = [125, 125, 125, 255];
 	const explodedMineColor: Color = [255, 0, 0, 255];
 	const flaggedColor: Color = [255, 120, 120, 255];
-	const revealedColor: Color = [220, 220, 220, 255];
+	const revealedColor: Color = [230, 230, 230, 255];
 	const hoverColor: Color = [150, 150, 150, 255];
 	const hoverFlaggedColor: Color = [225, 80, 80, 255];
 	const neighborFlaggedColor: Color = [220, 150, 80, 255];
@@ -417,13 +417,13 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2" style="width: {canvasWidth + 6}px;">
 	<!-- Header -->
 	<div class="grid grid-cols-3">
 		<span class="px-2" title="Mines remaining">
 			{board != undefined ? board?.mineCount - board?.flagCount : ""}
 		</span>
-		<span class="h-4 text-center -mt-1 text-lg">
+		<span class="-mt-1 h-4 text-center text-lg">
 			{face}
 		</span>
 		<span class="px-2 text-right [direction:rtl]" title="Elapsed time">
@@ -453,7 +453,7 @@
 	</div>
 
 	<!-- Flag Toggle Button / Game End Status -->
-	<div class="w-full h-16">
+	<div class="h-16 w-full">
 		{#if gameOver}
 			<p class="w-full text-center text-xl">You {isWin ? "Win!" : "Lose!"}</p>
 		{:else}
