@@ -62,7 +62,7 @@
 			<span>No high scores for this game</span>
 		{:else}
 			<form>
-				<table class="w-full table-fixed border-collapse leading-1 font-mono">
+				<table class="w-full table-fixed border-collapse font-mono leading-1">
 					<thead>
 						<tr class="text-left text-xl">
 							<th class="pl-2 text-left">RANK</th>
@@ -83,7 +83,7 @@
 											: ' text-surface-950-50'}"
 									>
 										<span>{rank + 1}</span>
-										<span class="text-sm -ml-3">{getSuffix(rank + 1)}</span>
+										<span class="-ml-3 text-sm">{getSuffix(rank + 1)}</span>
 									</td>
 									<td class="text-center">
 										{#if newHighScore != undefined && entry.name == undefined}
@@ -93,7 +93,7 @@
 												bind:this={nameInput}
 												on:input={() => (name = sanitizeName(name))}
 												maxlength="3"
-												class="h-full bg-transparent uppercase focus:outline-none w-9"
+												class="h-full w-9 bg-transparent uppercase focus:outline-none"
 												placeholder="___"
 											/>
 										{:else}

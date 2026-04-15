@@ -11,7 +11,7 @@
 </script>
 
 <section
-	class="w-full rounded-3xl border-1 border-surface-500 p-3 shadow-md shadow-black/50 dark:shadow-black bg-surface-50-950"
+	class="w-full rounded-3xl border border-surface-500 bg-surface-50-950 p-3 shadow-md shadow-black/50 dark:shadow-black"
 >
 	<button on:click={() => (expanded = !expanded)} class="flex w-full gap-2 text-lg select-none">
 		<span class="mt-1">

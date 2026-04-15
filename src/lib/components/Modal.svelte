@@ -19,7 +19,7 @@
 {#if showModal}
 	<div
 		on:click={closeModal}
-		class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs backdrop-brightness-80 dark:backdrop-brightness-110 px-4"
+		class="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-xs backdrop-brightness-80 dark:backdrop-brightness-110"
 	>
 		<section
 			on:click|stopPropagation
@@ -27,13 +27,13 @@
 			class="rounded-lg bg-surface-50-950 shadow-xl"
 		>
 			<header class="relative px-8 pt-3 pb-2">
-				<h2 class="text-2xl font-bold w-full text-center">
+				<h2 class="w-full text-center text-2xl font-bold">
 					{modalTitle}
 				</h2>
 				<button
 					on:click={closeModal}
 					on:keydown={(e) => e.key === "Enter" && closeModal()}
-					class="btn h-10 w-10 absolute top-0 right-0"
+					class="absolute top-0 right-0 btn h-10 w-10"
 					aria-label="Close Modal"
 					disabled={disableClose}
 				>
