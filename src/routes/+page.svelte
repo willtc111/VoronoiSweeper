@@ -48,16 +48,10 @@
 			<span>Voronoi Sweeper</span>
 		</h1>
 		<nav class="mx-auto flex w-fit flex-col items-center gap-2 sm:grid sm:grid-cols-3">
-			<button
-				class="headerbtn"
-				on:click={() => goto(resolve(`/game/${gotd}`))}
-			>
+			<button class="headerbtn" on:click={() => goto(resolve(`/game/${gotd}`))}>
 				Game of the Day
 			</button>
-			<button
-				class="headerbtn"
-				on:click={() => goto(resolve(`/game/${generateSeed()}`))}
-			>
+			<button class="headerbtn" on:click={() => goto(resolve(`/game/${generateSeed()}`))}>
 				Random Game
 			</button>
 			<button
@@ -72,9 +66,7 @@
 
 	{#if latestGames.length != 0}
 		<Accordion expanded={true}>
-			<h2 slot="title" class="accordionHeader">
-				Latest Game of the Day Scores
-			</h2>
+			<h2 slot="title" class="accordionHeader">Latest Game of the Day Scores</h2>
 			<p class="w-full pb-2 text-center">
 				Can you beat their times? Click on an entry to try the same game!
 			</p>
@@ -152,9 +144,7 @@
 		<h2 slot="title" class="accordionHeader">Controls</h2>
 		<ul>
 			<li>Click or tap a cell to reveal it.</li>
-			<li>
-				Right click or tap with flagging toggled on (using the "Flag" button) to flag a cell.
-			</li>
+			<li>Right click or tap with flagging toggled on (using the "Flag" button) to flag a cell.</li>
 			<li>
 				Hover over a cell with the mouse cursor to highlight that cell's neighbors. Press and hold
 				to highlight on mobile, but note that releasing will also click the cell.
@@ -170,20 +160,19 @@
 		</ul>
 	</Accordion>
 
-	<Accordion class="flex w-full flex-col sm:flex-row justify-between gap-8">
+	<Accordion class="flex w-full flex-col justify-between gap-8 sm:flex-row">
 		<h2 slot="title" class="accordionHeader">Try It Out</h2>
 		<div class="paragraphs">
 			<p>
-				Sometimes the best way to learn is to practice with a mini version. Try out the sample
-				game
+				Sometimes the best way to learn is to practice with a mini version. Try out the sample game
 				<span class="inline sm:hidden">below</span>
 				<span class="hidden sm:inline">to the right</span>
 				to get a feel for the mechanics.
 			</p>
 			<p>
 				Try clicking the cell in the center of the board. In this game it happens to be a 0-cell,
-				meaning it doesn't have any neighboring mines. As such, the board will automatically
-				expand the revealed area until it reaches cells with neighboring mines.
+				meaning it doesn't have any neighboring mines. As such, the board will automatically expand
+				the revealed area until it reaches cells with neighboring mines.
 			</p>
 			<p>
 				From there, try to deduce which cells must be mines and which must be safe based on the
@@ -218,20 +207,13 @@
 	</Accordion>
 
 	<Accordion>
-		<h2 slot="title" class="accordionHeader">
-			Why is it called Voronoi Sweeper?
-		</h2>
+		<h2 slot="title" class="accordionHeader">Why is it called Voronoi Sweeper?</h2>
 		<p>
 			Voronoi Sweeper is a generalized implementation of Minesweeper, hence the "Sweeper" part of
 			the name. "Voronoi" comes from the method used to generate the board. Instead of using a full
 			grid of square cells like traditional Minesweeper, it partitions the board into convex cells
 			using a
-			<a
-				href="https://en.wikipedia.org/wiki/Voronoi_diagram"
-				target="_blank"
-			>
-				Voronoi diagram
-			</a>
+			<a href="https://en.wikipedia.org/wiki/Voronoi_diagram" target="_blank"> Voronoi diagram </a>
 			formed from a pseudo-randomly selected set of points within the board. This allows for a wider variety
 			of connection patterns between neighboring cells. It is possible for the board generation to create
 			a full grid of square cells (see examples below). This makes Voronoi Sweeper a superset of Minesweeper.
@@ -257,7 +239,7 @@
 
 <style>
 	nav > button {
-		@apply btn w-full preset-filled-primary-500 rounded-xl h-10 py-4 px-8;
+		@apply btn h-10 w-full rounded-xl preset-filled-primary-500 px-8 py-4;
 	}
 	a {
 		@apply text-blue-500 underline;
@@ -268,13 +250,16 @@
 	ul {
 		@apply list-outside list-disc pl-6;
 	}
-	td:nth-child(1), th:nth-child(1) {
+	td:nth-child(1),
+	th:nth-child(1) {
 		@apply pl-2 text-left;
 	}
-	td:nth-child(2), th:nth-child(2) {
+	td:nth-child(2),
+	th:nth-child(2) {
 		@apply text-center;
 	}
-	td:nth-child(3), th:nth-child(3) {
+	td:nth-child(3),
+	th:nth-child(3) {
 		@apply pr-2 text-right;
 	}
 	.paragraphs {

@@ -16,28 +16,15 @@
 	<button on:click={() => (expanded = !expanded)} class="flex w-full gap-2 text-lg select-none">
 		<span class="mt-1">
 			{#if isEmpty}
-				<svg
-					height="24px"
-					width="24px"
-					viewBox="-25 -25 50 50"
-					xmlns="http://www.w3.org/2000/svg"
-				>
+				<svg height="24px" width="24px" viewBox="-25 -25 50 50" xmlns="http://www.w3.org/2000/svg">
 					<circle r="15%" />
 				</svg>
 			{:else if expanded}
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					height="24px"
-					width="24px"
-					viewBox="0 -960 960 960"
+				<svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960"
 					><path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z" /></svg
 				>
 			{:else}
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					height="24px"
-					width="24px"
-					viewBox="0 -960 960 960"
+				<svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960"
 					><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" /></svg
 				>
 			{/if}

@@ -423,7 +423,7 @@
 		<span class="px-2" title="Mines remaining">
 			{board != undefined ? board?.mineCount - board?.flagCount : ""}
 		</span>
-		<span class="h-full leading-6 text-center text-lg">
+		<span class="h-full text-center text-lg leading-6">
 			{face}
 		</span>
 		<span class="px-2 text-right [direction:rtl]" title="Elapsed time">
@@ -472,7 +472,7 @@
 	{#if showSeed}
 		<div class="flex flex-row justify-center gap-1">
 			<Copyable
-				class="btn w-32 preset-filled-primary-500 rounded-lg"
+				class="btn w-32 rounded-lg preset-filled-primary-500"
 				value={$page.url.href}
 				shownValue={"Share Game"}
 				copyMessage={"Copied Link"}

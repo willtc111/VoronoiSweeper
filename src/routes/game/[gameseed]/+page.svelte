@@ -78,9 +78,9 @@
 								{/if}
 								<tr class="h-6 hover:bg-surface-100-900">
 									<td
-										class="{newHighScore != undefined && entry.name == undefined
-											? 'font-bold text-success-700-300'
-											: ' text-surface-950-50'}"
+										class={newHighScore != undefined && entry.name == undefined
+											? "font-bold text-success-700-300"
+											: " text-surface-950-50"}
 									>
 										<span>{rank + 1}</span>
 										<span class="-ml-3 text-sm">{getSuffix(rank + 1)}</span>
@@ -101,9 +101,9 @@
 										{/if}
 									</td>
 									<td
-										class="{newHighScore != undefined && entry.name == undefined
-											? 'font-bold text-success-700-300'
-											: ' text-surface-950-50'}"
+										class={newHighScore != undefined && entry.name == undefined
+											? "font-bold text-success-700-300"
+											: " text-surface-950-50"}
 									>
 										{millisecondsToTimeString(entry.time_ms)}
 									</td>
@@ -139,12 +139,10 @@
 	<div class="flex flex-col-reverse bg-surface-50-950 p-2 sm:grid sm:grid-cols-3">
 		<div class="flex justify-center gap-2 sm:justify-start">
 			<a href={resolve("/")}> Home </a>
-			<a href={newGameUrl} data-sveltekit-reload>
-				New Game
-			</a>
+			<a href={newGameUrl} data-sveltekit-reload> New Game </a>
 			<button
 				on:click={showLeaderboard}
-				class="btn preset-filled-primary-500 rounded-lg py-px"
+				class="btn rounded-lg preset-filled-primary-500 py-px"
 				title="Leaderboard"
 			>
 				<svg
@@ -170,15 +168,18 @@
 
 <style>
 	a {
-		@apply h-8 btn preset-filled-primary-500 rounded-lg;
+		@apply btn h-8 rounded-lg preset-filled-primary-500;
 	}
-	td:nth-child(1), th:nth-child(1) {
+	td:nth-child(1),
+	th:nth-child(1) {
 		@apply pl-2 text-left;
 	}
-	td:nth-child(2), th:nth-child(2) {
+	td:nth-child(2),
+	th:nth-child(2) {
 		@apply text-center;
 	}
-	td:nth-child(3), th:nth-child(3) {
+	td:nth-child(3),
+	th:nth-child(3) {
 		@apply pr-2 text-right;
 	}
 </style>

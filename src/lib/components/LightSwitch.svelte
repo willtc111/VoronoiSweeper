@@ -62,24 +62,9 @@
 				? 'rounded-tr-none'
 				: ''} w-fit flex-col gap-1 p-2"
 		>
-			<button
-				onclick={() => changeMode("dark")}
-				disabled={mode == "dark"}
-			>
-				Dark
-			</button>
-			<button
-				onclick={() => changeMode("light")}
-				disabled={mode == "light"}
-			>
-				Light
-			</button>
-			<button
-				onclick={() => changeMode()}
-				disabled={mode == undefined}
-			>
-				Default
-			</button>
+			<button onclick={() => changeMode("dark")} disabled={mode == "dark"}> Dark </button>
+			<button onclick={() => changeMode("light")} disabled={mode == "light"}> Light </button>
+			<button onclick={() => changeMode()} disabled={mode == undefined}> Default </button>
 		</section>
 	{/if}
 </div>

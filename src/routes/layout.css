@@ -9,5 +9,5 @@
 
 /* Use this for hiding canvas elements during svelte transitions */
 .transitioning canvas {
-  visibility: hidden;
+	visibility: hidden;
 }
