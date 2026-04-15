@@ -96,14 +96,14 @@
 		gameOver ? (isWin ? [0, 255, 0, 255] : [255, 0, 0, 255]) : borderColor
 	);
 
-	let face = ":)";
+	let face = "🙂";
 	$: {
 		if (gameOver) {
-			face = isWin ? "B)" : ":(";
+			face = isWin ? "😎" : "🙁";
 		} else if (hoverCellIndex != undefined && !board.cells[hoverCellIndex].isRevealed) {
-			face = ":o";
+			face = "😮";
 		} else {
-			face = ":)";
+			face = "🙂";
 		}
 	}
 
@@ -423,10 +423,10 @@
 		<span class="px-2" title="Mines remaining">
 			{board != undefined ? board?.mineCount - board?.flagCount : ""}
 		</span>
-		<span class="px-2 text-center">
+		<span class="h-4 text-center -mt-1 text-lg">
 			{face}
 		</span>
-		<span class="px-2 text-right" title="Elapsed time">
+		<span class="px-2 text-right [direction:rtl]" title="Elapsed time">
 			{millisecondsToTimeString(timer)}
 		</span>
 	</div>
@@ -453,12 +453,12 @@
 	</div>
 
 	<!-- Flag Toggle Button / Game End Status -->
-	<div class="w-full">
+	<div class="w-full h-16">
 		{#if gameOver}
 			<p class="w-full text-center text-xl">You {isWin ? "Win!" : "Lose!"}</p>
 		{:else}
 			<button
-				class="btn h-16 w-full {flagging
+				class="btn h-full w-full {flagging
 					? 'preset-filled bg-error-950 text-error-50'
 					: 'preset-filled-primary-500'}"
 				on:click={() => (flagging = !flagging)}

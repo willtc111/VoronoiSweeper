@@ -198,7 +198,7 @@
 					your progress like the normal game does.
 				</li>
 			</ul>
-			<div class="w-fit shrink-0 self-center overflow-clip sm:mx-auto">
+			<div class="w-fit self-center overflow-clip sm:mx-auto">
 				<Board
 					seed="demo"
 					boardHeight={5}
