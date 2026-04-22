@@ -1,5 +1,5 @@
 import adapter from "@sveltejs/adapter-cloudflare";
-import { tailwindReference } from "./src/preprocessors/tailwindReference.ts";
+import { tailwindReference } from "./src/preprocessors/tailwindReference.js";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 
