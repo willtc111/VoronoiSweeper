@@ -1,11 +1,18 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import { clearSave } from "$lib/Board";
 	import Board from "$lib/components/Board.svelte";
 	import LightSwitch from "$lib/components/LightSwitch.svelte";
 	import Modal from "$lib/components/Modal.svelte";
 	import { millisecondsToTimeString } from "$lib/conversions";
-	import { insertHighScore, postHighScore, sanitizeName, type HighScore } from "$lib/Leaderboard";
+	import { clearSave } from "$lib/GameSave";
+	import {
+		calculateTotalTime,
+		insertHighScore,
+		postHighScore,
+		sanitizeName,
+		type HighScore,
+		type WinDetails,
+	} from "$lib/Leaderboard";
 	import { generateSeed } from "$lib/Random";
 	import type { PageData } from "./$types";
 
@@ -18,12 +25,14 @@
 	let modalRef: Modal;
 	let nameInput: HTMLInputElement;
 
-	let newHighScore: number | undefined = undefined;
+	let newHighScore: WinDetails | undefined = undefined;
 	let name = "";
-	function onWin(time: number) {
+	function onWin(winDetails: WinDetails) {
 		// Add the blank leaderboard entry
-		newHighScore = time;
-		leaderboard = insertHighScore(leaderboard, { time_ms: time, name: undefined });
+		newHighScore = winDetails;
+
+		const totalTime = calculateTotalTime(winDetails);
+		leaderboard = insertHighScore(leaderboard, { time_ms: totalTime, name: undefined });
 
 		// Prompt the player to enter their initials
 		showLeaderboard();

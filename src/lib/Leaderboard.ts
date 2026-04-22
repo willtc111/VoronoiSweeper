@@ -1,4 +1,5 @@
 import { base } from "$app/paths";
+import type { MoveRecord } from "./GameSave";
 
 export type LeaderboardEntry = {
 	name: string;
@@ -12,6 +13,12 @@ export type HighScore = {
 	time_ms: number;
 };
 
+export type WinDetails = {
+	startTime: number;
+	moves: MoveRecord[];
+	validationHash: string;
+};
+
 export async function getLeaderboard(gameseed: string): Promise<HighScore[]> {
 	return await fetch(`${base}/api/leaderboard?game_id=${gameseed}`)
 		.then((res) => res.json())
@@ -22,11 +29,17 @@ export async function getLeaderboard(gameseed: string): Promise<HighScore[]> {
 		});
 }
 
-export async function postHighScore(gameseed: string, name: string, time_ms: number) {
+export async function postHighScore(gameseed: string, name: string, win: WinDetails) {
 	await fetch(`${base}/api/leaderboard`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ name, game_id: gameseed, time_ms: time_ms }),
+		body: JSON.stringify({
+			name,
+			game_id: gameseed,
+			startTime: win.startTime,
+			moves: win.moves,
+			validationHash: win.validationHash,
+		}),
 	});
 }
 
@@ -52,4 +65,9 @@ export function sanitizeName(name: string) {
 		.toUpperCase()
 		.replace(/[^A-Z0-9 ]/g, "")
 		.substring(0, 3);
+}
+
+export function calculateTotalTime(winDetails: WinDetails): number {
+	// Last move timestamp minus the start timestamp
+	return winDetails.moves[winDetails.moves.length - 1].timestamp - winDetails.startTime;
 }

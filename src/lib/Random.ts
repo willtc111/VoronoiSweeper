@@ -29,7 +29,7 @@ export function generateSeed(rng: RNG = mulberry32(Date.now())): string {
  * @param str Seed string
  * @returns Seed number
  */
-export function seedToHash(str: string): number {
+export function stringToHash(str: string): number {
 	let hash = 0x811c9dc5;
 	for (let i = 0; i < str.length; i++) {
 		hash ^= str.charCodeAt(i);

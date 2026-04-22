@@ -9,6 +9,7 @@
 	import { millisecondsToTimeString } from "$lib/conversions";
 	import Board from "$lib/components/Board.svelte";
 	import Accordion from "$lib/components/Accordion.svelte";
+	import { SaveKey } from "$lib/GameSave";
 
 	export let data: PageData;
 	const latestGames: LeaderboardEntry[] = data.latestGames;
@@ -18,7 +19,7 @@
 	let saveSeed: string | undefined = undefined;
 
 	onMount(() => {
-		saveSeed = localStorage.getItem("saveSeed") ?? undefined;
+		saveSeed = localStorage.getItem(SaveKey.Seed) ?? undefined;
 	});
 
 	function pad0(v: number): string {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mulberry32, generateSeed, seedToHash, shuffle, type RNG } from "./Random";
+import { mulberry32, generateSeed, stringToHash, shuffle, type RNG } from "./Random";
 
 describe("Random", () => {
 	describe("mulberry32", () => {
@@ -45,23 +45,23 @@ describe("Random", () => {
 		});
 	});
 
-	describe("seedToHash", () => {
+	describe("stringToHash", () => {
 		it("should return a number for a given string", () => {
-			const hash = seedToHash("test");
+			const hash = stringToHash("test");
 			expect(typeof hash).toBe("number");
 			expect(hash).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should produce the same hash for the same string", () => {
-			expect(seedToHash("hello")).toBe(seedToHash("hello"));
+			expect(stringToHash("hello")).toBe(stringToHash("hello"));
 		});
 
 		it("should produce different hashes for different strings", () => {
-			expect(seedToHash("hello")).not.toBe(seedToHash("world"));
+			expect(stringToHash("hello")).not.toBe(stringToHash("world"));
 		});
 
 		it("should handle empty string", () => {
-			const hash = seedToHash("");
+			const hash = stringToHash("");
 			expect(typeof hash).toBe("number");
 		});
 	});

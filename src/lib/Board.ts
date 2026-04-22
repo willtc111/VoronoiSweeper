@@ -243,9 +243,3 @@ export function createBoard(
 		safeCount: 0,
 	};
 }
-
-export function clearSave() {
-	localStorage.removeItem("saveSeed");
-	localStorage.removeItem("saveSteps");
-	localStorage.removeItem("saveStartTime");
-}

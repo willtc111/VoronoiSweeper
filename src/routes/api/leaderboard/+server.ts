@@ -1,4 +1,5 @@
-import { sanitizeName } from "$lib/Leaderboard";
+import { validateGame } from "$lib/HashChain";
+import { calculateTotalTime, sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
 
@@ -21,12 +22,28 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 
 // POST: submit a score for a specific game
 export const POST: RequestHandler = async ({ request, platform }) => {
-	const { name, game_id, time_ms } = await request.json();
+	const { name, game_id, startTime, moves, validationHash } = await request.json();
 
-	if (!name || !game_id || !time_ms) {
-		return json({ error: "Missing fields" }, { status: 400 });
+	if (!name || !game_id || !startTime || !moves || !validationHash) {
+		return json(
+			{
+				error:
+					"Missing fields, body must include 'name', 'game_id', 'startTime', 'moves', and 'validationHash'",
+			},
+			{ status: 400 }
+		);
 	}
 
+	if (moves.length == 0) {
+		return json({ error: "Must include a non-zero number of moves" }, { status: 400 });
+	}
+
+	// Validate the moves
+	if (!(await validateGame(startTime, moves, validationHash))) {
+		return json({ error: "Submission rejected due to invalid validation hash" }, { status: 422 });
+	}
+
+	let time_ms = calculateTotalTime({ startTime, moves, validationHash });
 	const sanitizedName = sanitizeName(name).trim();
 
 	await platform!.env.DB.prepare(

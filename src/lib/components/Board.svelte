@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { Deck, Layer, OrthographicView } from "@deck.gl/core";
 	import { PolygonLayer, TextLayer } from "@deck.gl/layers";
-	import { mulberry32, seedToHash, type RNG } from "$lib/Random";
+	import { mulberry32, stringToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
-	import { clearSave, createBoard, type Board, type SweeperCell } from "$lib/Board";
+	import { createBoard, type Board, type SweeperCell } from "$lib/Board";
 	import { browser } from "$app/environment";
 	import { millisecondsToTimeString } from "$lib/conversions";
 	import Copyable from "$lib/components/Copyable.svelte";
 	import { page } from "$app/stores";
+	import { addToSave, clearSave, getSaveAsWinDetails, loadSave } from "$lib/GameSave";
+	import type { WinDetails } from "$lib/Leaderboard";
 
 	export let seed: string;
-	export let onWin: (time: number) => void;
+	export let onWin: (winDetails: WinDetails) => void;
 
 	export let boardWidth: number = 15;
 	export let boardHeight: number = 15;
@@ -74,13 +76,15 @@
 	let danger: number;
 
 	onMount(() => {
-		let random: RNG = mulberry32(seedToHash(seed));
+		let random: RNG = mulberry32(stringToHash(seed));
 		density = 0.3 + 0.7 * random();
 		danger = 0.15 + 0.1 * random();
 		let cellCount = Math.ceil(boardWidth * boardHeight * density);
 		let mineCount = Math.ceil(cellCount * danger);
 		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
-		loadSave();
+		if (saveProgress) {
+			({ startTime, timer } = loadSave(seed, flagCell, clickCell));
+		}
 
 		createDeck();
 		updateLayers();
@@ -247,7 +251,7 @@
 		}
 	}
 
-	function flagCell(index: number, fromSave: boolean = false) {
+	async function flagCell(index: number, fromSave: boolean = false) {
 		if (gameOver) {
 			return;
 		}
@@ -257,7 +261,7 @@
 		}
 
 		if (saveProgress && !fromSave) {
-			addToSave(index, true);
+			await addToSave(index, true, seed, startTime);
 		}
 
 		// Handle flag chording
@@ -286,7 +290,7 @@
 		updateLayers();
 	}
 
-	function clickCell(index: number, isExpand: boolean = false, fromSave: boolean = false) {
+	async function clickCell(index: number, isExpand: boolean = false, fromSave: boolean = false) {
 		if (gameOver) {
 			return;
 		}
@@ -307,7 +311,7 @@
 		}
 
 		if (saveProgress && !isExpand && !fromSave) {
-			addToSave(index, false);
+			await addToSave(index, false, seed, startTime);
 		}
 
 		if (cell.isRevealed) {
@@ -369,50 +373,12 @@
 				}
 			}
 			updateLayers();
-
-			onWin(timer);
+			onWin(getSaveAsWinDetails());
 		}
 
 		// Only update the layers after the full possible expansion
 		if (!isExpand) {
 			updateLayers();
-		}
-	}
-
-	type MoveRecord = {
-		index: number;
-		flag: boolean;
-	};
-
-	function addToSave(index: number, flag: boolean) {
-		let steps: string = "";
-		if (localStorage.getItem("saveSeed") != seed) {
-			localStorage.setItem("saveSeed", seed);
-			localStorage.setItem("saveStartTime", String(startTime));
-		} else {
-			steps = localStorage.getItem("saveSteps") ?? "";
-		}
-		if (steps.length != 0) {
-			steps = steps + ", ";
-		}
-		steps = steps + JSON.stringify({ index, flag });
-		localStorage.setItem("saveSteps", steps);
-	}
-
-	function loadSave() {
-		if (!saveProgress || localStorage.getItem("saveSeed") != seed) {
-			// The current save is not for this game, or a save doesn't exist, or saves are disabled
-			return;
-		}
-		startTime = Number(localStorage.getItem("saveStartTime") ?? Date.now());
-		timer = Date.now() - startTime;
-		let steps: MoveRecord[] = JSON.parse(`[${localStorage.getItem("saveSteps") ?? ""}]`);
-		for (let step of steps) {
-			if (step.flag) {
-				flagCell(step.index, true);
-			} else {
-				clickCell(step.index, false, true);
-			}
 		}
 	}
 </script>
