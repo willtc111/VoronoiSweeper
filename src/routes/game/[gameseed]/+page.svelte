@@ -80,7 +80,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each leaderboard as entry, rank}
+						{#each leaderboard as entry, rank (entry)}
 							{#if entry.name == undefined || rank < 10}
 								{#if entry.name == undefined && rank >= 10}
 									<tr class="h-2"></tr> <!-- spacer row -->

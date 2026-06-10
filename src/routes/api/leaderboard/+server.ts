@@ -1,3 +1,4 @@
+import { isCheating } from "$lib/CheatCheck";
 import { validateGame } from "$lib/HashChain";
 import { calculateTotalTime, sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
@@ -43,7 +44,12 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		return json({ error: "Submission rejected due to invalid validation hash" }, { status: 422 });
 	}
 
-	let time_ms = calculateTotalTime({ startTime, moves, validationHash });
+	// Check for cheating
+	if (isCheating(game_id, moves)) {
+		return json({ error: "Submission rejected due to suspected cheating" }, { status: 422 });
+	}
+
+	const time_ms = calculateTotalTime({ startTime, moves, validationHash });
 	const sanitizedName = sanitizeName(name).trim();
 
 	await platform!.env.DB.prepare(

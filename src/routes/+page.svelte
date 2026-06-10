@@ -80,7 +80,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each latestGames as entry}
+					{#each latestGames as entry (entry)}
 						<tr
 							class="cursor-pointer hover:bg-surface-200-800"
 							on:click={() => goto(resolve(`/game/${entry.game_id}`))}

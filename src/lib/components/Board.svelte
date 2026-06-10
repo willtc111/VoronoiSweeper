@@ -3,7 +3,7 @@
 	import { PolygonLayer, TextLayer } from "@deck.gl/layers";
 	import { mulberry32, stringToHash, type RNG } from "$lib/Random";
 	import { onMount } from "svelte";
-	import { createBoard, type Board, type SweeperCell } from "$lib/Board";
+	import { BOARD_SIZE, createRandomBoard, type Board, type SweeperCell } from "$lib/Board";
 	import { browser } from "$app/environment";
 	import { millisecondsToTimeString } from "$lib/conversions";
 	import Copyable from "$lib/components/Copyable.svelte";
@@ -14,8 +14,8 @@
 	export let seed: string;
 	export let onWin: (winDetails: WinDetails) => void;
 
-	export let boardWidth: number = 15;
-	export let boardHeight: number = 15;
+	export let boardWidth: number = BOARD_SIZE;
+	export let boardHeight: number = BOARD_SIZE;
 
 	export let showSeed: boolean = true;
 	export let showStats: boolean = false;
@@ -66,22 +66,9 @@
 	 */
 	let timerInterval: NodeJS.Timeout | undefined = undefined;
 
-	/**
-	 * Percentage of the grid points to make into cells (1 means a full grid, like traditional minesweeper)
-	 */
-	let density: number;
-	/**
-	 * The percentage of cells to make into mines (relative to the number of cells, not the total grid size)
-	 */
-	let danger: number;
-
 	onMount(() => {
 		let random: RNG = mulberry32(stringToHash(seed));
-		density = 0.3 + 0.7 * random();
-		danger = 0.15 + 0.1 * random();
-		let cellCount = Math.ceil(boardWidth * boardHeight * density);
-		let mineCount = Math.ceil(cellCount * danger);
-		board = createBoard(boardWidth, boardHeight, cellCount, mineCount, random);
+		board = createRandomBoard(boardWidth, boardHeight, random);
 		if (saveProgress) {
 			({ startTime, timer } = loadSave(seed, flagCell, clickCell));
 		}
@@ -440,15 +427,17 @@
 			<Copyable
 				class="btn w-32 rounded-lg preset-filled-primary-500"
 				value={$page.url.href}
-				shownValue={"Share Game"}
-				copyMessage={"Copied Link"}
+				shownValue="Share Game"
+				copyMessage="Copied Link"
 			/>
 		</div>
 	{/if}
 	{#if showStats}
 		<div class="flex flex-row justify-between">
-			<span title="Determines the number of cells"><b>Density:</b> {density?.toFixed(3)}</span>
-			<span title="Determines the number of mines"><b>Danger:</b> {danger?.toFixed(3)}</span>
+			<span title="Determines the number of cells"
+				><b>Density:</b> {board?.density?.toFixed(3)}</span
+			>
+			<span title="Determines the number of mines"><b>Danger:</b> {board?.danger?.toFixed(3)}</span>
 		</div>
 	{/if}
 </div>

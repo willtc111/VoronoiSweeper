@@ -1,11 +1,4 @@
-import {
-	angle_between,
-	average,
-	circumcircleCenter,
-	clipPolygon,
-	distance,
-	type Point2D,
-} from "./Geometry";
+import { angle_between, circumcircleCenter, clipPolygon, distance, type Point2D } from "./Geometry";
 import { shuffle, type RNG } from "./Random";
 
 type Point = {
@@ -28,11 +21,15 @@ export type SweeperCell = VoronoiCell & {
 export type Board = {
 	width: number;
 	height: number;
+	density: number;
+	danger: number;
 	flagCount: number;
 	mineCount: number;
 	safeCount: number;
 	cells: SweeperCell[];
 };
+
+export const BOARD_SIZE = 15;
 
 export class Triangle {
 	indices: [number, number, number];
@@ -52,6 +49,14 @@ export class Triangle {
 	circle_contains(point: Point2D): boolean {
 		return distance(this.circleCenter, point) <= this.circleRadius;
 	}
+}
+
+export function createRandomBoard(width: number, height: number, random: RNG): Board {
+	const density = 0.3 + 0.7 * random();
+	const danger = 0.15 + 0.1 * random();
+	const cellCount = Math.ceil(BOARD_SIZE * BOARD_SIZE * density);
+	const mineCount = Math.ceil(cellCount * danger);
+	return createBoard(width, height, cellCount, mineCount, random);
 }
 
 export function createBoard(
@@ -75,7 +80,7 @@ export function createBoard(
 	}
 
 	// Create list of unique grid positions to avoid overlapping cells
-	let maxOffset = 0;
+	const maxOffset = 0;
 	let gridPositions: [number, number][] = [...Array(height)].flatMap((_, y) =>
 		[...Array(width)].map(
 			(_, x) => [x + random() * maxOffset, y + random() * maxOffset] as [number, number]
@@ -84,32 +89,32 @@ export function createBoard(
 	gridPositions = shuffle(gridPositions, random);
 
 	// Select cell positions
-	let points: Point2D[] = [];
+	const points: Point2D[] = [];
 	for (let i = 0; i < cellCount; i++) {
 		points.push(gridPositions.pop()!);
 	}
 
 	// Perform Delaunay triangulation to calculate neighbors
-	let bounds: Point2D[] = [
+	const bounds: Point2D[] = [
 		[-3, -3],
 		[width + 2, -3],
 		[width + 2, height + 2],
 		[-3, height + 2],
 	];
-	let allPoints: Point2D[] = [...points, ...bounds];
+	const allPoints: Point2D[] = [...points, ...bounds];
 	let tris: Triangle[] = [
 		new Triangle(allPoints, [cellCount, cellCount + 1, cellCount + 2]),
 		new Triangle(allPoints, [cellCount + 1, cellCount + 2, cellCount + 3]),
 	];
 
 	for (let iPoint = 0; iPoint < allPoints.length - 4; iPoint++) {
-		let point = allPoints[iPoint];
+		const point = allPoints[iPoint];
 
 		// Separate triangles into those whose circumcircles
 		// contain the point and those that do not
-		let inCircle: Triangle[] = [];
-		let outCircle: Triangle[] = [];
-		for (let t of tris) {
+		const inCircle: Triangle[] = [];
+		const outCircle: Triangle[] = [];
+		for (const t of tris) {
 			if (t.circle_contains(point)) {
 				inCircle.push(t);
 			} else {
@@ -124,19 +129,19 @@ export function createBoard(
 		hullIndices = [...new Set(hullIndices)];
 		// Sort points counter-clockwise around the new point
 		hullIndices.sort((iA, iB) => {
-			let angleA = angle_between(point, allPoints[iA]);
-			let angleB = angle_between(point, allPoints[iB]);
+			const angleA = angle_between(point, allPoints[iA]);
+			const angleB = angle_between(point, allPoints[iB]);
 			return angleA - angleB;
 		});
 		// Form triangles from the new point to each pair of hull points
-		for (let iHullA of hullIndices.keys()) {
-			let iHullB = iHullA + 1 >= hullIndices.length ? 0 : iHullA + 1;
+		for (const iHullA of hullIndices.keys()) {
+			const iHullB = iHullA + 1 >= hullIndices.length ? 0 : iHullA + 1;
 			tris.push(new Triangle(allPoints, [hullIndices[iHullA], hullIndices[iHullB], iPoint]));
 		}
 	}
 
 	// Convert triangles to edges
-	let edges = tris.flatMap((t) => {
+	const edges = tris.flatMap((t) => {
 		return [
 			[t.indices[0], t.indices[1]],
 			[t.indices[1], t.indices[2]],
@@ -145,23 +150,23 @@ export function createBoard(
 	});
 
 	// Build adjacency matrix for voronoi polygon calculations
-	let adjmat: boolean[][] = Array.from({ length: allPoints.length }, () =>
+	const adjmat: boolean[][] = Array.from({ length: allPoints.length }, () =>
 		Array.from({ length: allPoints.length })
 	);
-	for (let [iA, iB] of edges) {
+	for (const [iA, iB] of edges) {
 		adjmat[iA][iB] = true;
 		adjmat[iB][iA] = true;
 	}
 
 	// Construct voronoi cells
-	let cells: SweeperCell[] = [];
+	const cells: SweeperCell[] = [];
 	for (let iPoint = 0; iPoint < allPoints.length - 4; iPoint++) {
 		// ignore border points
-		let point = allPoints[iPoint];
+		const point = allPoints[iPoint];
 		// Get neighboring points
-		let neighborIndices: number[] = [];
-		let neighborPoints: Point2D[] = [];
-		for (let [iNeighbor, isNeighbor] of adjmat[iPoint].entries()) {
+		const neighborIndices: number[] = [];
+		const neighborPoints: Point2D[] = [];
+		for (const [iNeighbor, isNeighbor] of adjmat[iPoint].entries()) {
 			if (isNeighbor) {
 				neighborPoints.push(allPoints[iNeighbor]);
 				if (iNeighbor < allPoints.length - 4) {
@@ -171,16 +176,16 @@ export function createBoard(
 			}
 		}
 		neighborPoints.sort((a, b) => {
-			let angleA = angle_between(point, a);
-			let angleB = angle_between(point, b);
+			const angleA = angle_between(point, a);
+			const angleB = angle_between(point, b);
 			return angleA - angleB;
 		});
 		// Construct region boundary from circumcenters with neighbors
 		let regionPoints: Point2D[] = [];
 		for (let iNeighbor = 0; iNeighbor < neighborPoints.length; iNeighbor++) {
-			let neighborA = neighborPoints[iNeighbor];
-			let neighborB = neighborPoints[iNeighbor >= neighborPoints.length - 1 ? 0 : iNeighbor + 1];
-			let center = circumcircleCenter([point, neighborA, neighborB]);
+			const neighborA = neighborPoints[iNeighbor];
+			const neighborB = neighborPoints[iNeighbor >= neighborPoints.length - 1 ? 0 : iNeighbor + 1];
+			const center = circumcircleCenter([point, neighborA, neighborB]);
 			regionPoints.push(center);
 		}
 		regionPoints.push(regionPoints[0]); // close the loop
@@ -188,7 +193,7 @@ export function createBoard(
 		// Clip region polygons to the board bounds
 		regionPoints = clipPolygon(regionPoints, -0.5, width - 0.5, -0.5, height - 0.5);
 
-		let cell: SweeperCell = {
+		const cell: SweeperCell = {
 			index: iPoint,
 			position: allPoints[iPoint],
 			border: regionPoints,
@@ -205,38 +210,44 @@ export function createBoard(
 
 	// Create a mapping from polygon points to cell index
 	const cornerToCellMap = new Map<string, number[]>();
-	for (let cell of cells) {
-		for (let point of cell.border) {
+	for (const cell of cells) {
+		for (const point of cell.border) {
 			const pointStr = `${point}`;
 			const cellIndices: number[] = cornerToCellMap.get(pointStr) ?? [];
 			cellIndices.push(cell.index);
 			cornerToCellMap.set(pointStr, cellIndices);
 		}
 	}
-	for (let neighborGroup of cornerToCellMap.values()) {
+	for (const neighborGroup of cornerToCellMap.values()) {
 		// Add neighbor group as neighbors to each of the cells (will remove duplicates and self-index later)
-		for (let neighbor of neighborGroup) {
+		for (const neighbor of neighborGroup) {
 			cells[neighbor].neighbors = cells[neighbor].neighbors.concat(neighborGroup);
 		}
 	}
-	for (let cell of cells) {
-		let neighborSet = new Set<number>(cell.neighbors);
+	for (const cell of cells) {
+		const neighborSet = new Set<number>(cell.neighbors);
 		neighborSet.delete(cell.index);
 		cell.neighbors = Array.from(neighborSet);
 	}
 
 	// Assign mines and calculate neighbor mine counts
-	let mineIndices = shuffle([...Array(cells.length).keys()], random).slice(0, mineCount);
-	for (let iMine of mineIndices) {
+	const mineIndices = shuffle([...Array(cells.length).keys()], random).slice(0, mineCount);
+	for (const iMine of mineIndices) {
 		cells[iMine].isMine = true;
-		for (let iNeighbor of cells[iMine].neighbors) {
+		for (const iNeighbor of cells[iMine].neighbors) {
 			cells[iNeighbor].neighborMines += 1;
 		}
 	}
 
+	// Calculate the density and danger stats
+	const density = cellCount / (BOARD_SIZE * BOARD_SIZE);
+	const danger = mineCount / cellCount;
+
 	return {
 		width: width,
 		height: height,
+		density: density,
+		danger: danger,
 		cells: cells,
 		flagCount: 0,
 		mineCount: mineCount,
