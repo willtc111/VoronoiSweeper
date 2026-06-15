@@ -54,7 +54,7 @@ export class Triangle {
 export function createRandomBoard(width: number, height: number, random: RNG): Board {
 	const density = 0.3 + 0.7 * random();
 	const danger = 0.15 + 0.1 * random();
-	const cellCount = Math.ceil(BOARD_SIZE * BOARD_SIZE * density);
+	const cellCount = Math.ceil(width * height * density);
 	const mineCount = Math.ceil(cellCount * danger);
 	return createBoard(width, height, cellCount, mineCount, random);
 }
