@@ -2,15 +2,21 @@ import { BOARD_SIZE, createRandomBoard, type Board } from "./Board";
 import type { MoveRecord } from "./GameSave";
 import { type RNG, mulberry32, stringToHash } from "./Random";
 
-export const MIN_AVG_MOVE_TIME = 100;
-export const MIN_GAME_PROBABILITY = 0.001; // naturally got a 0.0022
+export const MIN_AVG_MOVE_TIME = 200;
+export const MIN_GAME_PROBABILITY = Math.pow(0.5, 7); // Allow luck equivalent to seven 50/50 guesses
 
-export function isCheating(seed: string, moves: MoveRecord[]): boolean {
-	console.log(moves);
+export enum CheatingStatus {
+	Fair = 0,
+	TooFast = 1,
+	Improbable = 2,
+};
+
+export function checkCheating(seed: string, moves: MoveRecord[]): CheatingStatus {
+	const start = performance.now();
 
 	if (moves.length < 2) {
 		// Trivial game (unlikely, but possible).
-		return false;
+		return CheatingStatus.Fair;
 	}
 
 	// Construct the game board
@@ -27,76 +33,40 @@ export function isCheating(seed: string, moves: MoveRecord[]): boolean {
 	const avgMoveTime = sumMoveTime / (moves.length - 1);
 
 	if (avgMoveTime < MIN_AVG_MOVE_TIME) {
+		const elapsed = performance.now() - start;
+		console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
 		console.log(`Cheating detected on game "${seed}": average speed of ${avgMoveTime}ms per move`);
-		return true; // Too fast to be human
+		return CheatingStatus.TooFast; // Too fast to be human
 	}
 
 	// Calculate the probability of making these moves without cheating
 	let gameProbability = 1;
-	for (const move of moves) {
-		gameProbability *= moveProbability(board, move);
+
+	// First move is free
+	applyMove(board, moves[0]);
+
+	for (const move of moves.slice(1)) {
+		gameProbability *= calculateMoveProbability(board, move);
+		applyMove(board, move);
 	}
 	if (gameProbability < MIN_GAME_PROBABILITY) {
+		const elapsed = performance.now() - start;
+		console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
 		console.log(
 			`Cheating detected on game "${seed}": correct move probability of ${gameProbability}`
 		);
 		console.log(moves);
-		return true; // Too lucky to be playing fairly
+		return CheatingStatus.Improbable; // Too lucky to be playing fairly
 	}
+
+	const elapsed = performance.now() - start;
+	console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
 
 	// Cheating isn't likely
-	return false;
-}
-
-/**
- * Calculate the probability of this move being correct based on the current board state.
- * Note that this is not a thorough calculation, as it doesn't take multi-neighbor patterns into consideration. Therefore some moves that are guaranteed to be correct will be treated as guesses.
- *
- * @param board The current board
- * @param move The move being made
- * @returns The highest probability of the move being correct
- */
-function moveProbability(board: Board, move: MoveRecord): number {
-	if (board.cells[move.index].isRevealed) {
-		// If the cell is already revealed, the move is chording and is never a guess
-		applyMove(board, move);
-		return 1;
-	}
-
-	// Calculate the probability of this move being guessed based on the current board state.
-	const unknownCellCount = board.cells.length - board.flagCount - board.safeCount;
-	const remainingMineCount = board.mineCount - board.flagCount;
-	const mineProbability = remainingMineCount / unknownCellCount;
-	const baseProbability = move.flag ? mineProbability : 1 - mineProbability;
-	let probability = baseProbability;
-
-	// For each revealed neighbor
-	for (const iNeighbor of board.cells[move.index].neighbors) {
-		const neighbor = board.cells[iNeighbor];
-		if (!neighbor.isRevealed) {
-			continue;
-		}
-
-		// Calculate the probability of making this move based solely on this neighbor
-		let flagsNearNeighbor = 0;
-		let unknownNearNeighbor = 0;
-		for (const iNeighborNeighbor of neighbor.neighbors) {
-			const neighborNeighbor = board.cells[iNeighborNeighbor];
-			if (neighborNeighbor.isFlagged) {
-				flagsNearNeighbor += 1;
-			} else if (!neighborNeighbor.isRevealed) {
-				unknownNearNeighbor += 1;
-			}
-		}
-		const minesRemaining = neighbor.neighborMines - flagsNearNeighbor;
-		const localMineProbability = minesRemaining / unknownNearNeighbor;
-		const localProbability = move.flag ? localMineProbability : 1 - localMineProbability;
-		// Save this probability if it is the new best odds for this move
-		probability = Math.max(probability, localProbability);
-	}
-
-	applyMove(board, move);
-	return probability;
+	console.log(
+		`Game "${seed}": fair play probability of ${gameProbability}`
+	);
+	return CheatingStatus.Fair;
 }
 
 function applyMove(board: Board, move: MoveRecord) {
@@ -168,4 +138,180 @@ function clickCell(board: Board, index: number) {
 		}
 	}
 	board.safeCount += 1;
+}
+
+export function calculateMoveProbability(board: Board, move: MoveRecord): number {
+	const moveCell = board.cells[move.index];
+
+	// Chording and flag chording are always safe
+	if (moveCell.isRevealed) {
+		return 1;
+	}
+
+	// Unflagging is always safe
+	if (move.flag && moveCell.isFlagged) {
+		return 1;
+	}
+
+	// Incorrect flagging is always "safe" in a winning game as it will be undone later
+	if (move.flag && !moveCell.isMine) {
+		return 1;
+	}
+
+	let probability = naiveProbability(board, move);
+	if (probability < 1) {
+		// Try the advanced approach for non-trivial moves
+		probability = Math.max(probability, advancedProbability(board, move, 10));
+	}
+
+	return probability;
+}
+
+/**
+ * Calculate the probability of this move being correct based on the immediate neighbors.
+ * Note that this is not a thorough calculation, as it doesn't take multi-neighbor patterns into consideration. Therefore some moves that are guaranteed to be correct will be treated as guesses.
+ *
+ * @param board The current board
+ * @param move The move being made
+ * @returns The highest probability of the move being correct
+ */
+function naiveProbability(board: Board, move: MoveRecord): number {
+	// Calculate the probability of this move being guessed based on the current board state.
+	const unknownCellCount = board.cells.length - board.flagCount - board.safeCount;
+	const remainingMineCount = board.mineCount - board.flagCount;
+	const mineProbability = remainingMineCount / unknownCellCount;
+	const baseProbability = move.flag ? mineProbability : 1 - mineProbability;
+	let probability = baseProbability;
+
+	// For each revealed neighbor
+	for (const iNeighbor of board.cells[move.index].neighbors) {
+		const neighbor = board.cells[iNeighbor];
+		if (!neighbor.isRevealed) {
+			continue;
+		}
+
+		// Calculate the probability of making this move based solely on this neighbor
+		let flagsNearNeighbor = 0;
+		let unknownNearNeighbor = 0;
+		for (const iNeighborNeighbor of neighbor.neighbors) {
+			const neighborNeighbor = board.cells[iNeighborNeighbor];
+			if (neighborNeighbor.isFlagged) {
+				flagsNearNeighbor += 1;
+			} else if (!neighborNeighbor.isRevealed) {
+				unknownNearNeighbor += 1;
+			}
+		}
+		const minesRemaining = neighbor.neighborMines - flagsNearNeighbor;
+		const localMineProbability = minesRemaining / unknownNearNeighbor;
+		const localProbability = move.flag ? localMineProbability : 1 - localMineProbability;
+		// Save this probability if it is the new best odds for this move
+		probability = Math.max(probability, localProbability);
+		if (probability == 1) {
+			break;
+		}
+	}
+
+	console.log(`Probability ${probability} from naive check`);
+	return probability;
+}
+
+/**
+ * Calculate the probability of this move being correct based on the local board state.
+ * Note that this is an imperfect calculation, as it only considers a limited region of the board.
+ *
+ * @param board The current board
+ * @param move The move being made
+ * @param maxUnknown Limit on the number of unrevealed cells to consider (default of 10, max of 30)
+ * @returns The highest probability of the move being correct
+ */
+function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number = 10): number {
+	maxUnknown = Math.max(Math.min(30, maxUnknown), 2);
+
+	// Find the local frontier cell indices
+	const cellIndicesSet = new Set<number>();
+	cellIndicesSet.add(move.index);
+	let addedCells = true;
+	let unknownCount = 0;
+	while (addedCells && unknownCount < maxUnknown) {
+		addedCells = false;
+		for (const iCell of cellIndicesSet) {
+			const cellIsRevealed = board.cells[iCell].isRevealed;
+			for (const iNeighbor of board.cells[iCell].neighbors) {
+				if (cellIndicesSet.has(iNeighbor)) {
+					continue;
+				}
+				const neighbor = board.cells[iNeighbor];
+				if (cellIsRevealed && !neighbor.isRevealed) {
+					// Get unrevealed neighbor of revealed cells
+					cellIndicesSet.add(iNeighbor);
+					addedCells = true;
+					unknownCount += neighbor.isFlagged ? 0 : 1; // Don't count flagged cells as unknown
+				} else if (!cellIsRevealed && neighbor.isRevealed) {
+					cellIndicesSet.add(iNeighbor);
+					addedCells = true;
+				}
+			}
+		}
+	}
+
+	if (cellIndicesSet.size == 1) {
+		return 0; // Random guesses handled by the naive case
+	}
+
+	const frontierCellIndices = [...cellIndicesSet];
+	const revealedCellIndices = frontierCellIndices.filter(i => board.cells[i].isRevealed);
+	const unknownCellIndices = frontierCellIndices.filter(i => {
+		const cell = board.cells[i];
+		return !(cell.isRevealed || cell.isFlagged);
+	});
+	const cellIndexLookup = new Map();
+	for (let i = 0; i < unknownCellIndices.length; i++) {
+		cellIndexLookup.set(unknownCellIndices[i], i);
+	}
+
+	// Try every possible assignment of mines to see how many valid ones contain the player's move
+	let agree = 0;
+	let disagree = 0;
+	const n = unknownCellIndices.length;
+	for (let i = 0; i < (1 << n); i++) { // integer bits represent mine assignments
+
+		// Check the assignment for validity
+		let valid = true;
+		for (const revealedCellIndex of revealedCellIndices) {
+			const revealedCell = board.cells[revealedCellIndex];
+			let sumFlags = 0;
+			let minFlags = revealedCell.neighborMines; // number of needed flags to be valid
+			for (const iNeighbor of revealedCell.neighbors) {
+				const neighbor = board.cells[iNeighbor];
+				if (neighbor.isRevealed) {
+					continue;
+				} else if (neighbor.isFlagged) {
+					sumFlags++;
+				}	else if (cellIndexLookup.has(iNeighbor)) {
+					sumFlags += i >> cellIndexLookup.get(iNeighbor) & 1;
+				} else {
+					// Unrevealed cell, but outside of our region of consideration.  Treat it as optional.
+					minFlags--;
+				}
+			}
+			if (sumFlags < minFlags || revealedCell.neighborMines < sumFlags) {
+				valid = false;
+				break;
+			}
+		}
+
+		// Assignment is valid, so see if it agrees with the player's move or not
+		if (valid) {
+			const assignmentFlagged: boolean = (i >> cellIndexLookup.get(move.index) & 1) === 1;
+			if (assignmentFlagged === move.flag) {
+				agree++;
+			} else {
+				disagree++;
+			}
+		}
+	}
+
+	const probability = agree / (agree + disagree);
+	console.log(`Probability ${probability} from ${agree + disagree} valid assignments`);
+	return probability;
 }

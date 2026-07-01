@@ -6,7 +6,7 @@ export enum SaveKey {
 	Moves = "SaveMoves",
 	StartTime = "SaveStartTime",
 	ValidationHash = "SaveValidationHash",
-}
+};
 
 export type MoveRecord = {
 	index: number;
@@ -52,7 +52,7 @@ export function loadSave(
 	const moves: MoveRecord[] = getMoves();
 	const startTime = getStartTime();
 	const timer = moves[moves.length - 1].timestamp - startTime;
-	for (let move of moves) {
+	for (const move of moves) {
 		if (move.flag) {
 			flagCell(move.index, true);
 		} else {
@@ -74,7 +74,8 @@ function getMoves(): MoveRecord[] {
 }
 
 function getStartTime(): number {
-	return Number(localStorage.getItem(SaveKey.StartTime)) ?? Date.now();
+	const storedTime = localStorage.getItem(SaveKey.StartTime);
+	return storedTime === null ? Date.now() : Number(storedTime);
 }
 
 function getValidationHash(defaultHash: string = ""): string {

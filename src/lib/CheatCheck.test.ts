@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isCheating, MIN_AVG_MOVE_TIME } from "./CheatCheck";
+import { CheatingStatus, checkCheating, MIN_AVG_MOVE_TIME } from "./CheatCheck";
 import type { MoveRecord } from "./GameSave";
 
 function retimeMoves(moves: MoveRecord[], speed: number): MoveRecord[] {
@@ -167,14 +167,14 @@ describe("CheatCheck", () => {
 	];
 
 	it("returns true for a normal paced but impossibly lucky game", () => {
-		expect(isCheating(seed, cheatingMoves)).toBe(true);
+		expect(checkCheating(seed, cheatingMoves)).toBe(CheatingStatus.Improbable);
 	});
 
 	it("returns true for an impossibly fast game", () => {
-		expect(isCheating(seed, retimeMoves(legitMoves, MIN_AVG_MOVE_TIME - 1))).toBe(true);
+		expect(checkCheating(seed, retimeMoves(legitMoves, MIN_AVG_MOVE_TIME - 1))).toBe(CheatingStatus.TooFast);
 	});
 
 	it("returns false for a normal game", () => {
-		expect(isCheating(seed, legitMoves)).toBe(false);
+		expect(checkCheating(seed, legitMoves)).toBe(CheatingStatus.Fair);
 	});
 });

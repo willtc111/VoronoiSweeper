@@ -1,4 +1,4 @@
-import { isCheating } from "$lib/CheatCheck";
+import { CheatingStatus, checkCheating } from "$lib/CheatCheck";
 import { validateGame } from "$lib/HashChain";
 import { calculateTotalTime, sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
@@ -45,7 +45,8 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	}
 
 	// Check for cheating
-	if (isCheating(game_id, moves)) {
+	const cheatingStatus = checkCheating(game_id, moves);
+	if (cheatingStatus !== CheatingStatus.Fair) {
 		return json({ error: "Submission rejected due to suspected cheating" }, { status: 422 });
 	}
 
