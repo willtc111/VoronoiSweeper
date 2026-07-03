@@ -17,6 +17,7 @@
 		"test": "npm run test:unit -- --run"
 	},
 	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.17.0",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@skeletonlabs/skeleton": "^4.9.0",
@@ -27,7 +28,8 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/node": "^24",
-		"@vitest/browser-playwright": "^4.0.15",
+		"@vitest/browser": "^4.1.9",
+		"@vitest/browser-playwright": "^4.1.9",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.1",
@@ -42,9 +44,10 @@
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.48.1",
 		"vite": "^7.2.6",
+		"vite-node": "^6.0.0",
 		"vite-plugin-devtools-json": "^1.0.0",
-		"vitest": "^4.0.15",
-		"vitest-browser-svelte": "^2.0.1"
+		"vitest": "^4.1.9",
+		"vitest-browser-svelte": "^2.2.0"
 	},
 	"dependencies": {
 		"@deck.gl/core": "^9.2.5",

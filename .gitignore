@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 
 # Editor
 .vscode
+
+# Debug Scripts
+src/scripts/*
