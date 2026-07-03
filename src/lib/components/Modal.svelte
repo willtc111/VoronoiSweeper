@@ -8,7 +8,7 @@
 	}
 	export let modalTitle: string = "";
 	export let closeText: string = "X";
-	export let disableClose: boolean = false;
+	export let easyClose: boolean = true;
 
 	export function closeModal() {
 		showModal = false;
@@ -18,7 +18,11 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 {#if showModal}
 	<div
-		on:click={closeModal}
+		on:click={() => {
+			if (easyClose) {
+				closeModal();
+			}
+		}}
 		class="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-xs backdrop-brightness-80 dark:backdrop-brightness-110"
 	>
 		<section
@@ -30,15 +34,16 @@
 				<h2 class="w-full text-center text-2xl font-bold">
 					{modalTitle}
 				</h2>
-				<button
-					on:click={closeModal}
-					on:keydown={(e) => e.key === "Enter" && closeModal()}
-					class="absolute top-0 right-0 btn h-10 w-10"
-					aria-label="Close Modal"
-					disabled={disableClose}
-				>
-					{closeText}
-				</button>
+				{#if easyClose}
+					<button
+						on:click={closeModal}
+						on:keydown={(e) => e.key === "Enter" && closeModal()}
+						class="absolute top-0 right-0 btn h-10 w-10"
+						aria-label="Close Modal"
+					>
+						{closeText}
+					</button>
+				{/if}
 			</header>
 
 			<slot />

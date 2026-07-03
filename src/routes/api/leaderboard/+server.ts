@@ -10,10 +10,13 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 	if (!game_id) return json({ error: "Missing game_id" }, { status: 400 });
 
 	const result = await platform!.env.DB.prepare(
-		`SELECT name, time_ms, created_at
-			FROM leaderboard
-			WHERE game_id = ?
-			ORDER BY time_ms ASC`
+		`SELECT l.name, l.time_ms, l.created_at
+			FROM leaderboard l
+			WHERE l.game_id = ?
+				AND NOT EXISTS (
+					SELECT 1 FROM flagged_games f where f.leaderboard_id = l.id
+				)
+			ORDER BY l.time_ms ASC`
 	)
 		.bind(game_id)
 		.all();
@@ -74,5 +77,5 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 			.run();
 	}
 
-	return json({ success: true });
+	return json({ success: true, cheatingStatus: cheatingStatus });
 };

@@ -84,11 +84,6 @@ export function createBoard(
 		throw new Error("Number of mines must be at least 1");
 	}
 
-	// Warm up the RNG to avoid initial bias (and keep same rng as previous versions)
-	for (let i = 0; i < height * width * 2; i++) {
-		random();
-	}
-
 	// Create list of unique grid positions to avoid overlapping cells
 	let gridPositions: [number, number][] = [...Array(height)].flatMap((_, y) =>
 		[...Array(width)].map((_, x) => [x, y] as [number, number])

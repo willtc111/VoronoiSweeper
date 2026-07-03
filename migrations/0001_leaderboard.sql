@@ -6,4 +6,5 @@ CREATE TABLE IF NOT EXISTS leaderboard (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_game_time ON leaderboard(game_id, time_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_game_time ON leaderboard(game_id, time_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_created_at ON leaderboard(created_at DESC);
