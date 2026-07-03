@@ -1,3 +1,9 @@
+/**
+ * Asynchronous HMAC for frontend use
+ * @param keyStr Key string
+ * @param data Data to hash
+ * @returns Hash
+ */
 async function hmac(keyStr: string, data: string) {
 	const encoder = new TextEncoder();
 	const key = await crypto.subtle.importKey(
@@ -8,23 +14,18 @@ async function hmac(keyStr: string, data: string) {
 		["sign"]
 	);
 	const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
-	return Array.from(new Uint8Array(sig))
+	const hash = Array.from(new Uint8Array(sig))
 		.map((b) => b.toString(16).padStart(2, "0"))
 		.join("");
+	return hash;
 }
 
+/**
+ * Update the game hash using the current hash and next move
+ * @param currentHash The current game hash
+ * @param nextValue JSON string of the move
+ * @returns The next game hash
+ */
 export async function advanceChain(currentHash: string, nextValue: string) {
 	return await hmac(currentHash, nextValue);
-}
-
-export async function validateGame(
-	startTime: number,
-	moves: any[],
-	expectedHash: string
-): Promise<boolean> {
-	let hash = String(startTime);
-	for (const move of moves) {
-		hash = await advanceChain(hash, JSON.stringify(move));
-	}
-	return hash === expectedHash;
 }

@@ -1,5 +1,5 @@
 import { CheatingStatus, checkCheating } from "$lib/CheatCheck";
-import { validateGame } from "$lib/HashChain";
+import { validateGame } from "$lib/HashChain.server";
 import { calculateTotalTime, sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	}
 
 	// Validate the moves
-	if (!(await validateGame(startTime, moves, validationHash))) {
+	if (!validateGame(startTime, moves, validationHash)) {
 		return json({ error: "Submission rejected due to invalid validation hash" }, { status: 422 });
 	}
 

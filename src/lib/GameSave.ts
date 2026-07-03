@@ -1,4 +1,4 @@
-import { advanceChain } from "./HashChain";
+import { advanceChain } from "./HashChain.client";
 import type { WinDetails } from "./Leaderboard";
 
 export enum SaveKey {
@@ -6,7 +6,7 @@ export enum SaveKey {
 	Moves = "SaveMoves",
 	StartTime = "SaveStartTime",
 	ValidationHash = "SaveValidationHash",
-};
+}
 
 export type MoveRecord = {
 	index: number;
