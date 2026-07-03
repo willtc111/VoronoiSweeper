@@ -171,7 +171,9 @@ describe("CheatCheck", () => {
 	});
 
 	it("returns true for an impossibly fast game", () => {
-		expect(checkCheating(seed, retimeMoves(legitMoves, MIN_AVG_MOVE_TIME - 1))).toBe(CheatingStatus.TooFast);
+		expect(checkCheating(seed, retimeMoves(legitMoves, MIN_AVG_MOVE_TIME - 1))).toBe(
+			CheatingStatus.TooFast
+		);
 	});
 
 	it("returns false for a normal game", () => {

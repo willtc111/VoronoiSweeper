@@ -5,79 +5,73 @@ import { type RNG, mulberry32, stringToHash } from "./Random";
 export const MIN_AVG_MOVE_TIME = 200;
 export const MIN_GAME_PROBABILITY = Math.pow(0.5, 7); // Allow luck equivalent to seven 50/50 guesses
 
-export enum CheatingStatus {
-	Fair = 0,
-	TooFast = 1,
-	Improbable = 2,
-};
+export const CheatingStatus = {
+	Fair: 0, // No cheating detected
+	TooFast: 1, // Average move time is too fast to be human
+	Improbable: 2, // The probability of making these moves without cheating is too low
+	NonWin: 3, // The game wasn't a win (clicked a mine or didn't finish)
+} as const;
+export type CheatingStatus = (typeof CheatingStatus)[keyof typeof CheatingStatus];
 
 export function checkCheating(seed: string, moves: MoveRecord[]): CheatingStatus {
-	const start = performance.now();
-
-	if (moves.length < 2) {
-		// Trivial game (unlikely, but possible).
-		return CheatingStatus.Fair;
-	}
-
 	// Construct the game board
 	const random: RNG = mulberry32(stringToHash(seed));
 	const board = createRandomBoard(BOARD_SIZE, BOARD_SIZE, random);
 
-	// Calculate the average speed of all of the moves
-	let sumMoveTime = 0;
-	let lastTimestamp = moves[0].timestamp;
-	for (let i = 1; i < moves.length; i++) {
-		sumMoveTime += moves[i].timestamp - lastTimestamp;
-		lastTimestamp = moves[i].timestamp;
-	}
-	const avgMoveTime = sumMoveTime / (moves.length - 1);
+	if (moves.length > 1) {
+		// Calculate the average speed of all of the moves
+		let sumMoveTime = 0;
+		let lastTimestamp = moves[0].timestamp;
+		for (let i = 1; i < moves.length; i++) {
+			sumMoveTime += moves[i].timestamp - lastTimestamp;
+			lastTimestamp = moves[i].timestamp;
+		}
+		const avgMoveTime = sumMoveTime / (moves.length - 1);
 
-	if (avgMoveTime < MIN_AVG_MOVE_TIME) {
-		const elapsed = performance.now() - start;
-		console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
-		console.log(`Cheating detected on game "${seed}": average speed of ${avgMoveTime}ms per move`);
-		return CheatingStatus.TooFast; // Too fast to be human
+		if (avgMoveTime < MIN_AVG_MOVE_TIME) {
+			return CheatingStatus.TooFast; // Too fast to be human
+		}
 	}
 
 	// Calculate the probability of making these moves without cheating
 	let gameProbability = 1;
 
-	// First move is free
-	applyMove(board, moves[0]);
+	// First move isn't counted in probability of winning
+	if (!applyMove(board, moves[0])) {
+		return CheatingStatus.NonWin;
+	}
 
 	for (const move of moves.slice(1)) {
 		gameProbability *= calculateMoveProbability(board, move);
-		applyMove(board, move);
-	}
-	if (gameProbability < MIN_GAME_PROBABILITY) {
-		const elapsed = performance.now() - start;
-		console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
-		console.log(
-			`Cheating detected on game "${seed}": correct move probability of ${gameProbability}`
-		);
-		console.log(moves);
-		return CheatingStatus.Improbable; // Too lucky to be playing fairly
+
+		if (gameProbability < MIN_GAME_PROBABILITY) {
+			return CheatingStatus.Improbable;
+		}
+
+		if (!applyMove(board, move)) {
+			return CheatingStatus.NonWin; // Losing move
+		}
 	}
 
-	const elapsed = performance.now() - start;
-	console.log(`Cheating detection took ${elapsed.toFixed(3)} ms`);
+	if (board.safeCount !== board.cells.length - board.mineCount) {
+		return CheatingStatus.NonWin; // Unfinished game
+	}
 
 	// Cheating isn't likely
-	console.log(
-		`Game "${seed}": fair play probability of ${gameProbability}`
-	);
 	return CheatingStatus.Fair;
 }
 
-function applyMove(board: Board, move: MoveRecord) {
+function applyMove(board: Board, move: MoveRecord): boolean {
+	let safe = false;
 	if (move.flag) {
-		flagCell(board, move.index);
+		safe = flagCell(board, move.index);
 	} else {
-		clickCell(board, move.index);
+		safe = clickCell(board, move.index);
 	}
+	return safe;
 }
 
-function flagCell(board: Board, index: number) {
+function flagCell(board: Board, index: number): boolean {
 	// Handle flag chording
 	const cell = board.cells[index];
 	if (cell.isRevealed) {
@@ -95,14 +89,15 @@ function flagCell(board: Board, index: number) {
 				flagCell(board, neighbor.index);
 			}
 		}
-		return;
+		return true;
 	}
 
 	cell.isFlagged = !cell.isFlagged;
 	board.flagCount += cell.isFlagged ? 1 : -1;
+	return true;
 }
 
-function clickCell(board: Board, index: number) {
+function clickCell(board: Board, index: number): boolean {
 	const cell = board.cells[index];
 
 	if (cell.isRevealed) {
@@ -119,13 +114,13 @@ function clickCell(board: Board, index: number) {
 				}
 			}
 		}
-		return;
+		return true;
 	}
 
 	cell.isRevealed = true;
 	if (cell.isMine) {
 		// Game over
-		return;
+		return false;
 	}
 
 	// Automatically expand revealed area for 0s
@@ -138,6 +133,7 @@ function clickCell(board: Board, index: number) {
 		}
 	}
 	board.safeCount += 1;
+	return true;
 }
 
 export function calculateMoveProbability(board: Board, move: MoveRecord): number {
@@ -161,7 +157,8 @@ export function calculateMoveProbability(board: Board, move: MoveRecord): number
 	let probability = naiveProbability(board, move);
 	if (probability < 1) {
 		// Try the advanced approach for non-trivial moves
-		probability = Math.max(probability, advancedProbability(board, move, 10));
+		const new_probability = advancedProbability(board, move, 5);
+		probability = Math.max(probability, new_probability);
 	}
 
 	return probability;
@@ -211,7 +208,6 @@ function naiveProbability(board: Board, move: MoveRecord): number {
 		}
 	}
 
-	console.log(`Probability ${probability} from naive check`);
 	return probability;
 }
 
@@ -221,11 +217,11 @@ function naiveProbability(board: Board, move: MoveRecord): number {
  *
  * @param board The current board
  * @param move The move being made
- * @param maxUnknown Limit on the number of unrevealed cells to consider (default of 10, max of 30)
+ * @param maxUnknown Limit on the number of unrevealed cells to consider (default of 5, max of 30)
  * @returns The highest probability of the move being correct
  */
-function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number = 10): number {
-	maxUnknown = Math.max(Math.min(30, maxUnknown), 2);
+function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number = 5): number {
+	maxUnknown = Math.max(Math.min(30, maxUnknown), 3);
 
 	// Find the local frontier cell indices
 	const cellIndicesSet = new Set<number>();
@@ -235,8 +231,18 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 	while (addedCells && unknownCount < maxUnknown) {
 		addedCells = false;
 		for (const iCell of cellIndicesSet) {
-			const cellIsRevealed = board.cells[iCell].isRevealed;
-			for (const iNeighbor of board.cells[iCell].neighbors) {
+			if (unknownCount >= maxUnknown) {
+				break;
+			}
+			const cell = board.cells[iCell];
+			if (cell.isFlagged) {
+				continue; // Don't propagate fronteir through flagged cells
+			}
+			const cellIsRevealed = cell.isRevealed;
+			for (const iNeighbor of cell.neighbors) {
+				if (unknownCount >= maxUnknown) {
+					break;
+				}
 				if (cellIndicesSet.has(iNeighbor)) {
 					continue;
 				}
@@ -258,9 +264,10 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 		return 0; // Random guesses handled by the naive case
 	}
 
+	// Split frontier into unknown and revealed cells
 	const frontierCellIndices = [...cellIndicesSet];
-	const revealedCellIndices = frontierCellIndices.filter(i => board.cells[i].isRevealed);
-	const unknownCellIndices = frontierCellIndices.filter(i => {
+	const revealedCellIndices = frontierCellIndices.filter((i) => board.cells[i].isRevealed);
+	const unknownCellIndices = frontierCellIndices.filter((i) => {
 		const cell = board.cells[i];
 		return !(cell.isRevealed || cell.isFlagged);
 	});
@@ -273,7 +280,8 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 	let agree = 0;
 	let disagree = 0;
 	const n = unknownCellIndices.length;
-	for (let i = 0; i < (1 << n); i++) { // integer bits represent mine assignments
+	for (let i = 0; i < 1 << n; i++) {
+		// integer bits represent mine assignments
 
 		// Check the assignment for validity
 		let valid = true;
@@ -287,8 +295,8 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 					continue;
 				} else if (neighbor.isFlagged) {
 					sumFlags++;
-				}	else if (cellIndexLookup.has(iNeighbor)) {
-					sumFlags += i >> cellIndexLookup.get(iNeighbor) & 1;
+				} else if (cellIndexLookup.has(iNeighbor)) {
+					sumFlags += (i >> cellIndexLookup.get(iNeighbor)) & 1;
 				} else {
 					// Unrevealed cell, but outside of our region of consideration.  Treat it as optional.
 					minFlags--;
@@ -302,7 +310,7 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 
 		// Assignment is valid, so see if it agrees with the player's move or not
 		if (valid) {
-			const assignmentFlagged: boolean = (i >> cellIndexLookup.get(move.index) & 1) === 1;
+			const assignmentFlagged: boolean = ((i >> cellIndexLookup.get(move.index)) & 1) === 1;
 			if (assignmentFlagged === move.flag) {
 				agree++;
 			} else {
@@ -312,6 +320,5 @@ function advancedProbability(board: Board, move: MoveRecord, maxUnknown: number 
 	}
 
 	const probability = agree / (agree + disagree);
-	console.log(`Probability ${probability} from ${agree + disagree} valid assignments`);
 	return probability;
 }

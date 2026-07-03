@@ -3,6 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { sveltekit } from "@sveltejs/kit/vite";
+import path from "node:path";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-pool-workers";
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
@@ -35,7 +37,26 @@ export default defineConfig({
 					name: "server",
 					environment: "node",
 					include: ["src/**/*.{test,spec}.{js,ts}"],
-					exclude: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+					exclude: ["src/**/*.svelte.{test,spec}.{js,ts}", "src/**/*.workers.{test,spec}.{js,ts}"],
+				},
+			},
+
+			{
+				plugins: [
+					cloudflareTest({
+						wrangler: {
+							configPath: "./wrangler.json",
+						},
+						miniflare: {
+							bindings: {
+								TEST_MIGRATIONS: await readD1Migrations(path.resolve("./migrations")),
+							},
+						},
+					}),
+				],
+				test: {
+					name: "workers",
+					include: ["src/**/*.workers.{test,spec}.{js,ts}"],
 				},
 			},
 		],

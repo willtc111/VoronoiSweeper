@@ -44,20 +44,35 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		return json({ error: "Submission rejected due to invalid validation hash" }, { status: 422 });
 	}
 
-	// Check for cheating
-	const cheatingStatus = checkCheating(game_id, moves);
-	if (cheatingStatus !== CheatingStatus.Fair) {
-		return json({ error: "Submission rejected due to suspected cheating" }, { status: 422 });
-	}
-
 	const time_ms = calculateTotalTime({ startTime, moves, validationHash });
 	const sanitizedName = sanitizeName(name).trim();
 
-	await platform!.env.DB.prepare(
-		`INSERT INTO leaderboard (name, game_id, time_ms) VALUES (?, ?, ?)`
+	// Start inserting the game into the leaderboard
+	const leaderboardInsert = platform!.env.DB.prepare(
+		`INSERT INTO leaderboard (name, game_id, time_ms)
+		VALUES (?, ?, ?)
+		RETURNING id`
 	)
 		.bind(sanitizedName, game_id, time_ms)
-		.run();
+		.first<number>("id");
+
+	// Check for cheating
+	const cheatingStatus = checkCheating(game_id, moves);
+
+	// Wait for leaderboard insert to finish
+	const leaderboard_id = await leaderboardInsert;
+	if (!leaderboard_id) {
+		return json({ error: "Failed to insert leaderboard entry" }, { status: 500 });
+	}
+
+	if (cheatingStatus !== CheatingStatus.Fair) {
+		// Log the cheating game in the database
+		await platform!.env.DB.prepare(
+			`INSERT INTO flagged_games (leaderboard_id, moves, reason) VALUES (?, ?, ?)`
+		)
+			.bind(leaderboard_id, JSON.stringify(moves), cheatingStatus)
+			.run();
+	}
 
 	return json({ success: true });
 };
