@@ -34,6 +34,8 @@
 		// Reorder to MM/DD/YYYY format
 		return `${month}/${day}/${year}`;
 	}
+
+	let demoRefreshKey = 0;
 </script>
 
 <title> Voronoi Sweeper </title>
@@ -161,49 +163,51 @@
 		</ul>
 	</Accordion>
 
-	<Accordion class="flex w-full flex-col justify-between gap-8 sm:flex-row">
-		<h2 slot="title" class="accordionHeader">Try It Out</h2>
+	<Accordion class="flex w-full flex-col justify-between gap-4 sm:flex-row sm:gap-8">
+		<h2 slot="title" class="accordionHeader">Interactive Tutorial</h2>
 		<div class="paragraphs">
 			<p>
-				Sometimes the best way to learn is to practice with a mini version. Try out the sample game
-				<span class="inline sm:hidden">below</span>
-				<span class="hidden sm:inline">to the right</span>
-				to get a feel for the mechanics.
-			</p>
-			<p>
-				Try clicking the cell in the center of the board. In this game it happens to be a 0-cell,
-				meaning it doesn't have any neighboring mines. As such, the board will automatically expand
-				the revealed area until it reaches cells with neighboring mines.
+				Try clicking the cell at the top right corner of the board. In this game it happens to be a
+				0-cell, meaning it doesn't have any neighboring mines. As such, the board will automatically
+				expand the revealed area until it reaches cells with neighboring mines.
 			</p>
 			<p>
 				From there, try to deduce which cells must be mines and which must be safe based on the
-				numbers revealed. The following strageties will help:
+				numbers revealed. The following strageties will be enough to figure it out:
 			</p>
 			<ul>
 				<li>
 					If a cell has as many unrevealed neighbor cells as its number, all of the unrevealed
-					neighbor cells must be mines (eg: a 1-cell with one unrevealed neighbor).
+					neighbor cells must be mines (eg: a 1-cell with one unrevealed neighbor). Flag those
+					neighbor cells.
 				</li>
 				<li>
 					If a cell has as many neighboring flags as its number, all of the remaining unvrevealed
-					neighbors must be safe (eg: a 1-cell with one flagged neighbor and one unflagged
-					neighbor).
+					neighbors must be safe (eg: a 1-cell with one flagged neighbor). Click those neighbor
+					cells.
 				</li>
 			</ul>
 			<p>
-				If you need to try again, just refresh the page to restart the game. This demo won't save
-				your progress like the normal game does.
+				If you need to try again, just refresh the page or press this button:
+				<button
+					class="btn w-fit preset-filled-primary-500 font-bold"
+					on:click={() => demoRefreshKey++}
+				>
+					⟲
+				</button>
 			</p>
 		</div>
 		<div class="w-fit self-center overflow-clip sm:mx-auto">
-			<Board
-				seed="demo"
-				boardHeight={5}
-				boardWidth={5}
-				onWin={() => {}}
-				showSeed={false}
-				saveProgress={false}
-			/>
+			{#key demoRefreshKey}
+				<Board
+					seed="demo55"
+					boardHeight={5}
+					boardWidth={5}
+					onWin={() => {}}
+					showSeed={false}
+					saveProgress={false}
+				/>
+			{/key}
 		</div>
 	</Accordion>
 

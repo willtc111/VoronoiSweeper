@@ -402,6 +402,7 @@
 			on:contextmenu|preventDefault
 			on:pointerup={onPointerUp}
 			on:pointermove={onHover}
+			on:pointerdown={onHover}
 		></canvas>
 	</div>
 
