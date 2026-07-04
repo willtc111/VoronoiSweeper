@@ -225,14 +225,14 @@
 		<h2 slot="title" class="accordionHeader">Interesting Games</h2>
 		<ul>
 			<li>
-				<a href={resolve("/game/ij2iei70")}>These</a>
-				<a href={resolve("/game/0t8rn4bj")}>three</a>
-				<a href={resolve("/game/wj36rv1c")}>games</a>
-				are normal games of Minesweeper in Voronoi Sweeper.
+				<a href={resolve("/game/cn58w7my")}>These</a>
+				<a href={resolve("/game/ez4gjqpj")}>three</a>
+				<a href={resolve("/game/pwhocntn")}>games</a>
+				are examples of normal games of Minesweeper in Voronoi Sweeper.
 			</li>
 			<li>
-				<a href={resolve("/game/hmfwn2sn")}>This</a>
-				game contains both an 8-cell and a 7-cell (above 5 is rare).
+				<a href={resolve("/game/zj0bjhm3")}>This</a>
+				game contains a 10-cell, which is impossible in normal Minesweeper.
 			</li>
 		</ul>
 	</Accordion>
