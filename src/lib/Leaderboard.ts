@@ -1,4 +1,5 @@
 import { base } from "$app/paths";
+import type { CheatingStatus } from "./CheatCheck";
 import type { MoveRecord } from "./GameSave";
 
 export type LeaderboardEntry = {
@@ -19,6 +20,11 @@ export type WinDetails = {
 	validationHash: string;
 };
 
+export type SubmissionResult = {
+	success: boolean;
+	cheatingStatus?: CheatingStatus;
+};
+
 export async function getLeaderboard(gameseed: string): Promise<HighScore[]> {
 	return await fetch(`${base}/api/leaderboard?game_id=${gameseed}`)
 		.then((res) => res.json())
@@ -29,8 +35,12 @@ export async function getLeaderboard(gameseed: string): Promise<HighScore[]> {
 		});
 }
 
-export async function postHighScore(gameseed: string, name: string, win: WinDetails) {
-	await fetch(`${base}/api/leaderboard`, {
+export async function postHighScore(
+	gameseed: string,
+	name: string,
+	win: WinDetails
+): Promise<SubmissionResult> {
+	return await fetch(`${base}/api/leaderboard`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -40,7 +50,12 @@ export async function postHighScore(gameseed: string, name: string, win: WinDeta
 			moves: win.moves,
 			validationHash: win.validationHash,
 		}),
-	});
+	})
+		.then((res) => res.json())
+		.catch((error) => {
+			console.log(error);
+			return { success: false };
+		});
 }
 
 export function insertHighScore(leaderboard: HighScore[], newScore: HighScore): HighScore[] {
@@ -50,7 +65,7 @@ export function insertHighScore(leaderboard: HighScore[], newScore: HighScore): 
 
 	leaderboard = [...leaderboard]; // Clone to avoid mutating the original leaderboard
 
-	let insertIndex = leaderboard.findIndex((entry) => newScore.time_ms < entry.time_ms);
+	const insertIndex = leaderboard.findIndex((entry) => newScore.time_ms < entry.time_ms);
 	if (insertIndex === -1) {
 		return [...leaderboard, newScore];
 	}

@@ -1,4 +1,4 @@
-import { angle_between, circumcircleCenter, clipPolygon, distance, type Point2D } from "./Geometry";
+import { angle_between, circumcircleCenter, clipPolygon, type Point2D } from "./Geometry";
 import { shuffle, type RNG } from "./Random";
 
 type Point = {
@@ -34,7 +34,7 @@ export const BOARD_SIZE = 15;
 export class Triangle {
 	indices: [number, number, number];
 	circleCenter: Point2D;
-	circleRadius: number;
+	circleRadiusSquared: number;
 
 	constructor(points: Point2D[], indices: [number, number, number]) {
 		this.indices = indices;
@@ -43,11 +43,16 @@ export class Triangle {
 			points[indices[1]],
 			points[indices[2]],
 		]);
-		this.circleRadius = distance(this.circleCenter, points[indices[0]]);
+		const p0 = points[indices[0]];
+		const dx = this.circleCenter[0] - p0[0];
+		const dy = this.circleCenter[1] - p0[1];
+		this.circleRadiusSquared = dx * dx + dy * dy;
 	}
 
 	circle_contains(point: Point2D): boolean {
-		return distance(this.circleCenter, point) <= this.circleRadius;
+		const dx = this.circleCenter[0] - point[0];
+		const dy = this.circleCenter[1] - point[1];
+		return dx * dx + dy * dy <= this.circleRadiusSquared;
 	}
 }
 
@@ -80,11 +85,8 @@ export function createBoard(
 	}
 
 	// Create list of unique grid positions to avoid overlapping cells
-	const maxOffset = 0;
 	let gridPositions: [number, number][] = [...Array(height)].flatMap((_, y) =>
-		[...Array(width)].map(
-			(_, x) => [x + random() * maxOffset, y + random() * maxOffset] as [number, number]
-		)
+		[...Array(width)].map((_, x) => [x, y] as [number, number])
 	);
 	gridPositions = shuffle(gridPositions, random);
 
@@ -102,7 +104,7 @@ export function createBoard(
 		[-3, height + 2],
 	];
 	const allPoints: Point2D[] = [...points, ...bounds];
-	let tris: Triangle[] = [
+	const tris: Triangle[] = [
 		new Triangle(allPoints, [cellCount, cellCount + 1, cellCount + 2]),
 		new Triangle(allPoints, [cellCount + 1, cellCount + 2, cellCount + 3]),
 	];
@@ -110,29 +112,30 @@ export function createBoard(
 	for (let iPoint = 0; iPoint < allPoints.length - 4; iPoint++) {
 		const point = allPoints[iPoint];
 
-		// Separate triangles into those whose circumcircles
-		// contain the point and those that do not
-		const inCircle: Triangle[] = [];
-		const outCircle: Triangle[] = [];
-		for (const t of tris) {
+		// Build the hull (ordered loop of poitns around the new point)
+		// from triangles whose circumcircles contain the point
+		let hullIndices: number[] = [];
+		let writeIndex = 0;
+		for (let i = 0; i < tris.length; i++) {
+			const t = tris[i];
 			if (t.circle_contains(point)) {
-				inCircle.push(t);
+				hullIndices.push(t.indices[0], t.indices[1], t.indices[2]);
 			} else {
-				outCircle.push(t);
+				tris[writeIndex++] = t;
 			}
 		}
-		tris = outCircle; // Remove triangles that do not
-
-		// Build the hull (ordered loop of points around the new point)
-		let hullIndices = inCircle.flatMap((t) => [...t.indices]);
+		tris.length = writeIndex;
 		// Remove duplicate points
 		hullIndices = [...new Set(hullIndices)];
+
 		// Sort points counter-clockwise around the new point
-		hullIndices.sort((iA, iB) => {
-			const angleA = angle_between(point, allPoints[iA]);
-			const angleB = angle_between(point, allPoints[iB]);
-			return angleA - angleB;
-		});
+		const hullWithAngles = hullIndices.map((iHull) => ({
+			index: iHull,
+			angle: angle_between(point, allPoints[iHull]),
+		}));
+		hullWithAngles.sort((a, b) => a.angle - b.angle);
+		hullIndices = hullWithAngles.map((h) => h.index);
+
 		// Form triangles from the new point to each pair of hull points
 		for (const iHullA of hullIndices.keys()) {
 			const iHullB = iHullA + 1 >= hullIndices.length ? 0 : iHullA + 1;
@@ -140,54 +143,26 @@ export function createBoard(
 		}
 	}
 
-	// Convert triangles to edges
-	const edges = tris.flatMap((t) => {
-		return [
-			[t.indices[0], t.indices[1]],
-			[t.indices[1], t.indices[2]],
-			[t.indices[2], t.indices[0]],
-		];
-	});
-
-	// Build adjacency matrix for voronoi polygon calculations
-	const adjmat: boolean[][] = Array.from({ length: allPoints.length }, () =>
-		Array.from({ length: allPoints.length })
-	);
-	for (const [iA, iB] of edges) {
-		adjmat[iA][iB] = true;
-		adjmat[iB][iA] = true;
+	const incidentTriangles: Triangle[][] = Array.from({ length: allPoints.length }, () => []);
+	for (const t of tris) {
+		for (const iVertex of t.indices) {
+			incidentTriangles[iVertex].push(t);
+		}
 	}
 
 	// Construct voronoi cells
 	const cells: SweeperCell[] = [];
-	for (let iPoint = 0; iPoint < allPoints.length - 4; iPoint++) {
-		// ignore border points
+	const boundaryStart = allPoints.length - 4; // Ignore border points
+	for (let iPoint = 0; iPoint < boundaryStart; iPoint++) {
 		const point = allPoints[iPoint];
-		// Get neighboring points
-		const neighborIndices: number[] = [];
-		const neighborPoints: Point2D[] = [];
-		for (const [iNeighbor, isNeighbor] of adjmat[iPoint].entries()) {
-			if (isNeighbor) {
-				neighborPoints.push(allPoints[iNeighbor]);
-				if (iNeighbor < allPoints.length - 4) {
-					// ignore border points
-					neighborIndices.push(iNeighbor);
-				}
-			}
-		}
-		neighborPoints.sort((a, b) => {
-			const angleA = angle_between(point, a);
-			const angleB = angle_between(point, b);
-			return angleA - angleB;
-		});
-		// Construct region boundary from circumcenters with neighbors
-		let regionPoints: Point2D[] = [];
-		for (let iNeighbor = 0; iNeighbor < neighborPoints.length; iNeighbor++) {
-			const neighborA = neighborPoints[iNeighbor];
-			const neighborB = neighborPoints[iNeighbor >= neighborPoints.length - 1 ? 0 : iNeighbor + 1];
-			const center = circumcircleCenter([point, neighborA, neighborB]);
-			regionPoints.push(center);
-		}
+
+		// Sort this point's incident triangles by the angle of their circumcenters
+		const withAngles = incidentTriangles[iPoint].map((t) => ({
+			center: t.circleCenter,
+			angle: angle_between(point, t.circleCenter),
+		}));
+		withAngles.sort((a, b) => a.angle - b.angle);
+		let regionPoints: Point2D[] = withAngles.map((h) => h.center);
 		regionPoints.push(regionPoints[0]); // close the loop
 
 		// Clip region polygons to the board bounds
@@ -197,7 +172,7 @@ export function createBoard(
 			index: iPoint,
 			position: allPoints[iPoint],
 			border: regionPoints,
-			neighbors: [], //neighborIndices,
+			neighbors: [],
 			isMine: false,
 			isRevealed: false,
 			isFlagged: false,
@@ -209,21 +184,32 @@ export function createBoard(
 	// Reassign connectivity based on shared border points
 
 	// Create a mapping from polygon points to cell index
-	const cornerToCellMap = new Map<string, number[]>();
+	const cornerToCellMap = new Map<number, number[]>();
+	const PRECISION = 1e4;
+	const KEY_SCALE = 1e7;
 	for (const cell of cells) {
-		for (const point of cell.border) {
-			const pointStr = `${point}`;
-			const cellIndices: number[] = cornerToCellMap.get(pointStr) ?? [];
+		for (const [x, y] of cell.border) {
+			const key = Math.round(x * PRECISION) * KEY_SCALE + Math.round(y * PRECISION);
+			let cellIndices = cornerToCellMap.get(key);
+			if (cellIndices === undefined) {
+				cellIndices = [];
+				cornerToCellMap.set(key, cellIndices);
+			}
 			cellIndices.push(cell.index);
-			cornerToCellMap.set(pointStr, cellIndices);
 		}
 	}
+
 	for (const neighborGroup of cornerToCellMap.values()) {
 		// Add neighbor group as neighbors to each of the cells (will remove duplicates and self-index later)
 		for (const neighbor of neighborGroup) {
-			cells[neighbor].neighbors = cells[neighbor].neighbors.concat(neighborGroup);
+			for (const other of neighborGroup) {
+				if (other !== neighbor) {
+					cells[neighbor].neighbors.push(other);
+				}
+			}
 		}
 	}
+
 	for (const cell of cells) {
 		const neighborSet = new Set<number>(cell.neighbors);
 		neighborSet.delete(cell.index);

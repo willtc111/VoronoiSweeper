@@ -1,5 +1,5 @@
-import { isCheating } from "$lib/CheatCheck";
-import { validateGame } from "$lib/HashChain";
+import { CheatingStatus, checkCheating } from "$lib/CheatCheck";
+import { validateGame } from "$lib/HashChain.server";
 import { calculateTotalTime, sanitizeName } from "$lib/Leaderboard";
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
@@ -10,10 +10,13 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 	if (!game_id) return json({ error: "Missing game_id" }, { status: 400 });
 
 	const result = await platform!.env.DB.prepare(
-		`SELECT name, time_ms, created_at
-			FROM leaderboard
-			WHERE game_id = ?
-			ORDER BY time_ms ASC`
+		`SELECT l.name, l.time_ms, l.created_at
+			FROM leaderboard l
+			WHERE l.game_id = ?
+				AND NOT EXISTS (
+					SELECT 1 FROM flagged_games f where f.leaderboard_id = l.id
+				)
+			ORDER BY l.time_ms ASC`
 	)
 		.bind(game_id)
 		.all();
@@ -40,23 +43,39 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	}
 
 	// Validate the moves
-	if (!(await validateGame(startTime, moves, validationHash))) {
+	if (!validateGame(startTime, moves, validationHash)) {
 		return json({ error: "Submission rejected due to invalid validation hash" }, { status: 422 });
-	}
-
-	// Check for cheating
-	if (isCheating(game_id, moves)) {
-		return json({ error: "Submission rejected due to suspected cheating" }, { status: 422 });
 	}
 
 	const time_ms = calculateTotalTime({ startTime, moves, validationHash });
 	const sanitizedName = sanitizeName(name).trim();
 
-	await platform!.env.DB.prepare(
-		`INSERT INTO leaderboard (name, game_id, time_ms) VALUES (?, ?, ?)`
+	// Start inserting the game into the leaderboard
+	const leaderboardInsert = platform!.env.DB.prepare(
+		`INSERT INTO leaderboard (name, game_id, time_ms)
+		VALUES (?, ?, ?)
+		RETURNING id`
 	)
 		.bind(sanitizedName, game_id, time_ms)
-		.run();
+		.first<number>("id");
 
-	return json({ success: true });
+	// Check for cheating
+	const cheatingStatus = checkCheating(game_id, moves);
+
+	// Wait for leaderboard insert to finish
+	const leaderboard_id = await leaderboardInsert;
+	if (!leaderboard_id) {
+		return json({ error: "Failed to insert leaderboard entry" }, { status: 500 });
+	}
+
+	if (cheatingStatus !== CheatingStatus.Fair) {
+		// Log the cheating game in the database
+		await platform!.env.DB.prepare(
+			`INSERT INTO flagged_games (leaderboard_id, moves, reason) VALUES (?, ?, ?)`
+		)
+			.bind(leaderboard_id, JSON.stringify(moves), cheatingStatus)
+			.run();
+	}
+
+	return json({ success: true, cheatingStatus: cheatingStatus });
 };

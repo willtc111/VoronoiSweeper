@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS flagged_games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  leaderboard_id INTEGER NOT NULL UNIQUE,
+  moves TEXT NOT NULL,
+  reason INTEGER NOT NULL CHECK (reason IN (1, 2, 3)),
+  FOREIGN KEY (leaderboard_id) REFERENCES leaderboard(id) ON DELETE CASCADE
+);

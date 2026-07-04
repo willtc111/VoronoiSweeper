@@ -20,9 +20,12 @@
 	const gameseed = data.gameseed;
 	const newGameUrl = resolve(`/game/${generateSeed()}`);
 
+	let cheatingModalRef: Modal;
+	let errorModalRef: Modal;
+
 	let leaderboard: HighScore[] = data.leaderboard;
 
-	let modalRef: Modal;
+	let leaderboardModalRef: Modal;
 	let nameInput: HTMLInputElement;
 
 	let newHighScore: WinDetails | undefined = undefined;
@@ -40,10 +43,23 @@
 
 	async function submitHighScore() {
 		name = sanitizeName(name);
-		await postHighScore(gameseed, name, newHighScore!);
+		let submissionResult = await postHighScore(gameseed, name, newHighScore!);
+		console.log(submissionResult);
 
-		// Update our local copy of the leaderboard
-		leaderboard.find((entry) => entry.name === undefined)!.name = name.toUpperCase();
+		if (!submissionResult.success) {
+			errorModalRef.openModal();
+			return;
+		}
+
+		if (submissionResult.cheatingStatus !== 0) {
+			cheatingModalRef.openModal();
+
+			// Remove this entry from the leaderboard
+			leaderboard = leaderboard.filter((entry) => entry.name !== undefined);
+		} else {
+			// Update our local copy of the leaderboard
+			leaderboard.find((entry) => entry.name === undefined)!.name = name.toUpperCase();
+		}
 
 		// Stop submitting and erase the save
 		newHighScore = undefined;
@@ -51,7 +67,7 @@
 	}
 
 	function showLeaderboard() {
-		modalRef.openModal();
+		leaderboardModalRef.openModal();
 		setTimeout(() => nameInput?.focus(), 200);
 	}
 
@@ -65,7 +81,41 @@
 
 <title> Voronoi Sweeper </title>
 
-<Modal modalTitle="Leaderboard" bind:this={modalRef}>
+<Modal modalTitle="Oh no!" bind:this={errorModalRef}>
+	<div class="mx-6 mb-4 flex max-w-92 flex-col items-center justify-center gap-4 text-center">
+		<p>Something went wrong while trying to submit your score to the leaderboard.</p>
+		<p>Please try again in a little while.</p>
+	</div>
+</Modal>
+
+<Modal modalTitle="Cheating Detected" bind:this={cheatingModalRef} easyClose={false}>
+	<div class="mx-6 mb-4 max-w-92">
+		<p class="mb-4 text-center">
+			You are either extraordinarily lucky or you cheated. Either way, your submission has been
+			flagged and will be hidden from the leaderboard until it has been reviewed.
+		</p>
+		<div class="flex flex-col items-center justify-center gap-2">
+			<button
+				class="btn w-fit preset-filled-primary-500"
+				on:click={() => {
+					cheatingModalRef.closeModal();
+				}}
+			>
+				I apologize for cheating
+			</button>
+			<button
+				class="btn w-fit preset-filled-primary-500"
+				on:click={() => {
+					cheatingModalRef.closeModal();
+				}}
+			>
+				I promise I just got lucky
+			</button>
+		</div>
+	</div>
+</Modal>
+
+<Modal modalTitle="Leaderboard" bind:this={leaderboardModalRef}>
 	<div class="mx-6 mb-4 max-w-92 text-lg">
 		{#if leaderboard.length == 0}
 			<span>No high scores for this game</span>
@@ -128,7 +178,7 @@
 							disabled={name.length != 3 || name.trim().length == 0}
 							on:click={() => {
 								submitHighScore();
-								modalRef.closeModal();
+								leaderboardModalRef.closeModal();
 							}}
 						>
 							Submit

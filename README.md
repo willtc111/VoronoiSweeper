@@ -26,3 +26,25 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Testing
+
+To run the tests:
+
+```sh
+npm run test
+```
+
+## Debugging
+
+To do script execution for manual testing or debugging, use vite-node so that import aliases work:
+
+```sh
+npx vite-node <path_to_script>
+```
+
+To do profiling with the `chrome://inspect` DevTools:
+
+```sh
+npx --node-options="--inspect-brk" vite-node <path_to_script>
+```

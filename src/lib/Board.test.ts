@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createBoard, Triangle, type Board, type SweeperCell } from "./Board";
+import { createBoard, Triangle, type Board } from "./Board";
 import { mulberry32 } from "./Random";
 
 describe("Board", () => {
@@ -106,7 +106,7 @@ describe("Board", () => {
 			const triangle = new Triangle(points, indices);
 			expect(triangle.indices).toEqual(indices);
 			expect(triangle.circleCenter).toEqual([0.5, 0.5]); // Circumcenter of equilateral triangle
-			expect(triangle.circleRadius).toBeCloseTo(Math.sqrt(0.5), 5); // Distance from center to vertex
+			expect(triangle.circleRadiusSquared).toBeCloseTo(0.5, 5); // Distance from center to vertex
 		});
 
 		it("should detect if a point is inside the circumcircle", () => {
@@ -135,7 +135,7 @@ describe("Board", () => {
 			const triangle = new Triangle(points, indices);
 			// For collinear, circumcircleCenter returns average, so radius is distance from center to a point
 			expect(triangle.circleCenter).toEqual([1, 1]); // Average
-			expect(triangle.circleRadius).toBeCloseTo(Math.sqrt(2), 5); // Distance from (1,1) to (0,0)
+			expect(triangle.circleRadiusSquared).toBeCloseTo(2, 5); // Distance from (1,1) to (0,0)
 		});
 	});
 });
